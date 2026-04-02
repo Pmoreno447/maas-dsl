@@ -1,0 +1,16 @@
+{
+    "projectName": "MultiAgentDsl",
+    "languages": [
+        {
+            "id": "multi-agent-dsl",
+            "grammar": "src/multi-agent-dsl.langium",
+            "fileExtensions": [
+                "mad"
+            ],
+            "textMate": {
+                "out": "syntaxes/multi-agent-dsl.tmLanguage.json"
+            }
+        }
+    ],
+    "out": "src/generated"
+}
