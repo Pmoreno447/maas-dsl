@@ -2,7 +2,7 @@ grammar MultiAgentDsl
 
 entry LLMMultiAgentSystem:
     '{'
-        enviorement=Environment
+        envirement=Environment
         profiles+=Profile*
         tools+=(PythonTool | MCPTool | EndPointTool)*
         agents+=Agent*
@@ -65,13 +65,13 @@ Param:
     name=ID 'type' type=AttributeType;
 
 PythonTool:
-    'python_tool' ToolBase '{'
+    'pythonTool' ToolBase '{'
         'modulePath' modulePath=STRING
         'functionName' functionName=STRING
     '}';
 
 MCPTool:
-    'mcp_tool' ToolBase'{'
+    'mcpTool' ToolBase'{'
         'serverUrl' serverUrl=STRING
         'serverName' serverName=STRING
     '}';
@@ -80,7 +80,7 @@ MethodType returns string:
     'GET' | 'POST' | 'PUT' | 'DELETE';
 
 EndPointTool:
-    'endpoint_tool' ToolBase'{'
+    'endpointTsool' ToolBase'{'
         'url' url=STRING
         'method' method=MethodType
     '}';

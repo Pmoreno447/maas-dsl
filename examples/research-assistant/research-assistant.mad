@@ -1,0 +1,53 @@
+{
+    // Entorno
+    environment Investigacion {
+        attribute ultimoEnEscribir type string
+        attribute completo type boolean
+        none
+    }
+
+    // Perfiles
+    profile Organizador description "Tu te encargas de gestionar un grafo de agentes, tienes un investigador, redactor y validador. Solo se pueden
+        dar las siguientes transacciones:
+        
+            - Investigador -> Redactor
+            - Redactor -> Validador
+            - Validador -> Investigador (si es rechazado el paper escrito)
+            - Validador -> Final (Si es aprobado el paper escrito)
+        
+        No puedes hacer ninguna otra transición"
+    profile Investigador description "Eres un agente especializado en encontrar papers especializados. Busca los enlaces de artículos para el tema que te han pedido."
+    profile Redactor description "Lee los artículos de los que dispones y utilizalos para escribir un paper de investigación."
+    profile Validador description "Eres un revisor. Comprueba la respuesta para detectar inconsistencias, errores e información faltante."
+
+    // Herramientas
+    mcpTool Tavily description "Buscador de internet que devuelve URLs y resumenes de esas webs" {
+        serverUrl "www.example.com"
+        serverName "Buscador de internet"
+    }
+
+    // Agentes
+    agent Organizador {
+        model gpt
+        profile Organizador
+    }
+
+    agent Investigador {
+        model gpt
+        profile Investigador
+    }
+
+    agent Redactor {
+        model gpt
+        profile Redactor
+    }
+
+    agent Validador {
+        model gpt
+        profile Validador
+    }
+
+    // Modelo de comunicación
+    centralized Grafo coordinator Organizador
+
+}

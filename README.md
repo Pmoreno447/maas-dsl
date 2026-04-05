@@ -28,6 +28,12 @@ DSL (Domain-Specific Language) para la especificación de sistemas multi-agente 
 - **Módulo Langium:** [`packages/language/src/multi-agent-dsl-module.ts`](./packages/language/src/multi-agent-dsl-module.ts)
   Wiring del servicio de lenguaje (parser, linker, validator).
 
+- **Ejemplos:** [`examples/`](./examples/)
+  Código escrito a mano simulando el que generaría un generador de código sobre el metamodelo actual, con el objetivo de identificar las limitaciones del metamodelo en escenarios reales. Cada ejemplo incluye tres artefactos:
+  - El modelo `.mad` que representa el sistema en el DSL.
+  - El código ejecutable generado de forma simulada.
+  - Un documento Markdown con los problemas encontrados durante el ejercicio.
+
 ---
 
 ## Conceptos del metamodelo
@@ -87,21 +93,11 @@ _Nota: a priori se dejó a un lado la expresividad de los paradigmas de comunica
 Las restricciones de bien-formedness que no pueden expresarse en la gramática se implementan en [`multi-agent-dsl-validator.ts`](./packages/language/src/multi-agent-dsl-validator.ts). Actualmente el validator es el generado por defecto de Langium; las restricciones específicas del DSL están **pendientes de implementar**.
 
 Restricciones planificadas (no exhaustivo):
-- Un agente debe referenciar un perfil definido en el mismo sistema.
 - Los niveles de `Layer` dentro de un `Layered` deben ser únicos.
-- `Centralized` debe referenciar un agente existente como coordinador.
+- `Centralized` debe referenciar un agente existente como coordinador. 
 
 ---
 
-## Consideraciones pendientes y trabajo futuro
-
-- [ ] Revisar si `GameRule` debe evolucionar hacia un concepto más estructurado (prompt con variables, condiciones, etc.).
-- [ ] Evaluar si los `Attributes` del entorno deben poder asignarse como contexto inicial de los agentes.
-- [ ] Añadir validaciones OCL equivalentes en el validator.
-- [ ] **Human In the Loop**: pendiente de diseñar cómo se integra este concepto en el metamodelo (punto de entrada de intervención humana dentro del flujo del sistema).
-- [ ] Ampliar los tipos de modelo (`ModelType`) con versiones específicas o soporte para modelos locales adicionales.
-
----
 
 ## Instalación y uso
 
