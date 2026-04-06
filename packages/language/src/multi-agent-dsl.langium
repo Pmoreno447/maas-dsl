@@ -50,6 +50,7 @@ Agent:
     'agent' name=ID '{'
         'model' model=ModelType
         'profile' profile=[Profile]
+        ('tools' tools+=[Tool:ID] (',' tools+=[Tool:ID])*)?
     '}';
 
 Profile:

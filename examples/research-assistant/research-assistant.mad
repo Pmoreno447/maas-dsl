@@ -35,6 +35,8 @@
     agent Investigador {
         model gpt
         profile Investigador
+        tools Tavily
+        
     }
 
     agent Redactor {

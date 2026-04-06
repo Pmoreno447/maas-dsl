@@ -26,7 +26,7 @@ mcp_client = MultiServerMCPClient({
 # Modelos (el investigador se bindea con tools dentro de la sesión)
 mcp_tools = []
 modeloOrganizador = init_chat_model(model="openai:gpt-5-nano", temperature=0).with_structured_output(Decision)
-modeloInvestigador = init_chat_model(model="gpt-4o-mini", temperature=0)
+modeloInvestigador = init_chat_model(model="openai:gpt-5-nano", temperature=0)
 modeloRedactor = init_chat_model(model="openai:gpt-5-nano", temperature=0)
 modeloRevisor = init_chat_model(model="openai:gpt-5-nano", temperature=0)
 

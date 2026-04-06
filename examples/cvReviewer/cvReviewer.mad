@@ -1,0 +1,107 @@
+{
+    environment Reclutamiento {
+        // Criterios para evaluar el cvc
+        attribute candidateName type string
+        attribute candidateEmail type string
+        attribute yearsExperience type int
+        attribute skills type string
+        attribute educationLevel type string
+        attribute language type string
+
+        // Datos de la evaluacion
+        attribute score type int
+        attribute meetRequirement type boolean
+        attribute strengths type string
+        attribute weaknesses type string
+
+        // Datos del informe
+        attribute reportText type string
+        attribute recommendation type string
+
+        // Mensajes (trimeado y resumen se pueden implementar en el generador sin problemas
+        // opto por none para no perder tiempo en el código y así centrarme en evaluar el 
+        // metamodelo)
+        none
+    }
+
+    profile Extractor description 
+    "
+        Eres un extractor de datos de RRHH experto. Dado el texto bruto de un CV, extrae la siguiente información de forma estructurada:
+            - Nombre completo del candidato
+            - Años totales de experiencia profesional
+            - Lista de habilidades técnicas
+            - Nivel de estudios más alto (grado, máster, doctorado)
+            - Idiomas y nivel de competencia
+
+        Sé preciso y extrae únicamente la información mencionada explícitamente en el CV. Si no encuentras algún campo, devuelve null.
+    "
+
+    profile Evaluator description
+    "
+        Eres un evaluador senior de RRHH. Dado los datos estructurados extraídos de un CV y los requisitos del puesto, evalúa al candidato y proporciona:
+            - Una puntuación del 0 al 10 según cómo encaja el candidato con el puesto
+            - Un booleano indicando si el candidato cumple los requisitos mínimos
+            - Una lista de puntos fuertes relevantes para el puesto
+            - Una lista de puntos débiles o requisitos que no cumple
+
+        Sé objetivo y basa tu evaluación estrictamente en los datos extraídos frente a los requisitos del puesto.
+    "
+
+    profile ReportGenerator description
+    "
+        Eres un redactor de informes de RRHH. Dado los datos extraídos del candidato y los resultados de su evaluación, genera un informe profesional y conciso para el equipo de RRHH que incluya:
+            - Un breve resumen del candidato
+            - La puntuación de la evaluación e indicación de si cumple los requisitos mínimos
+            - Puntos fuertes y débiles principales
+            - Una recomendación final: 'contratar', 'descartar' o 'considerar'
+
+        Escribe en un tono claro y profesional adecuado para la toma de decisiones de RRHH.    
+    "
+
+    profile Notifier description
+    "
+        Eres un asistente de notificaciones de RRHH. Dado el resultado de la evaluación de un candidato, tu tarea es:
+            - Comprobar si la puntuación del candidato es estrictamente superior a 8
+            - Si la puntuación supera el 8, redactar un correo electrónico dirigido al propio candidato felicitándolo e informándole de que su perfil ha sido preseleccionado para el puesto, indicándole que el equipo de RRHH se pondrá en contacto con él próximamente para los siguientes pasos del proceso de selección
+            - Enviar dicho correo utilizando la herramienta notifyByEmail
+            - Si la puntuación es 8 o inferior, no enviar ningún correo y simplemente indicar que el candidato no alcanza el umbral de notificación
+
+        El tono del correo debe ser cálido, profesional y motivador. No reveles la puntuación numérica al candidato. No inventes datos: utiliza únicamente la información recibida del informe de evaluación.
+    "
+    
+    // Herramientas
+    pythonTool notifyByEmail description "Herramienta para notificar por correo electronico" {
+        modulePath "Example"
+        functionName "notifyByEmail"
+    }
+
+    // Agentes
+    agent Extractor {
+        model gpt
+        profile Extractor
+    }
+
+    agent Evaluator {
+        model gpt
+        profile Evaluator
+    }
+
+    agent ReportGenerator {
+        model gpt
+        profile ReportGenerator
+    }
+
+    agent Notifier {
+        model gpt
+        profile ReportGenerator
+        tools notifyByEmail
+    }
+
+    // Modelo de comunicacion
+    layered Grafo {
+        layer NotifierLayer level 4 agent Notifier
+        layer ReportLayer level 3 next NotifierLayer agent ReportGenerator
+        layer EvaluatorLayer level 2 next ReportLayer agent Evaluator
+        layer ExtractorLayer level 1 next EvaluatorLayer agent Extractor 
+    }
+}
