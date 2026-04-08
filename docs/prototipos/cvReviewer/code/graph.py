@@ -2,8 +2,8 @@
 import asyncio
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, START, END
-from state import State
-from agents import nodoExtractor, nodoEvaluator, nodoReportGenerator, nodoNotifier
+from docs.prototipos.cvReviewer.code.state import State
+from docs.prototipos.cvReviewer.code.agents import nodoExtractor, nodoEvaluator, nodoReportGenerator, nodoNotifier
 
 
 # Construcción del grafo
