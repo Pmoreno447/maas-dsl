@@ -26,21 +26,21 @@ GameRule:
     'gamerule' id = ID 'description' description = STRING;
 
 Attribute:
-    'attribute' name = ID 'type' type = AttributeType;
+    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING;
 
 type Message = Trim | Mix | None | Summarize;
 
 Trim:
-    'trim' 'trigger' trigger=INT;
+    'trim' 'maxToken' maxToken = INT;
 
 Mix:
-    'mix' 'trigger' trigger=INT;
+    'mix' 'maxToken' maxToken = INT;
 
 None:
     {infer None} 'none';
 
 Summarize:
-    {infer Summarize} 'summarize';
+    'summarize' 'maxToken' maxToken = INT;
 
 // A partir de ahora, se define todo lo relacionado con los agentes individuales:
 ModelType returns string:
@@ -48,8 +48,19 @@ ModelType returns string:
 
 Agent:
     'agent' name=ID '{'
+        //Necesario
         'model' model=ModelType
         'profile' profile=[Profile]
+
+        //Recomendable
+        'stateContext' stateContext+=[Attribute]*
+        'stateUpdate' stateUpdate+=[Attribute]*
+
+        // Opcional
+        ('temperature' temperature = INT)?
+        ('maxToken' maxToken = INT)?
+        ('timeOut' timeOut = INT)?
+        ('maxRetries' maxRetries = INT)?
         ('tools' tools+=[Tool:ID] (',' tools+=[Tool:ID])*)?
     '}';
 
@@ -59,22 +70,21 @@ Profile:
 type Tool = PythonTool | MCPTool | EndPointTool;
 
 fragment ToolBase:
-    name=ID 'description' description=STRING
+    name=ID 
+    'description' description=STRING
     ('params' '{' param+=Param* '}')?;
 
 Param:
     name=ID 'type' type=AttributeType;
 
 PythonTool:
-    'pythonTool' ToolBase '{'
-        'modulePath' modulePath=STRING
-        'functionName' functionName=STRING
-    '}';
+    'pythonTool' ToolBase 'modulePath' modulePath=STRING;
 
 MCPTool:
     'mcpTool' ToolBase'{'
         'serverUrl' serverUrl=STRING
-        'serverName' serverName=STRING
+        'transport' transport=STRING
+        ('key' key=STRING)?
     '}';
 
 MethodType returns string:
@@ -90,25 +100,27 @@ EndPointTool:
 // Se ha omitido CommunicationModel porque se ha descartado CommunicationParadigm 
 type CommunicationStructure = Layered | SharedMessagePool | Centralized | Decentralized;
 
+fragment NextCommStructure:
+    ('next' next=[CommunicationStructure])?;
+
 Layered:
     'layered' name=ID '{'
         layers+=Layer+
-    '}';
+    '}' NextCommStructure;
+
+Centralized:
+    'centralized' name=ID 'coordinator' coordinator=[Agent] NextCommStructure;
+
+SharedMessagePool:
+    {infer SharedMessagePool} 'shared_message_pool' NextCommStructure;
+
+Decentralized:
+    {infer Decentralized} 'decentralized' NextCommStructure;
 
 Layer:
     'layer' name=ID 'level' level=INT
     ('next' next=[Layer])?
     'agent' agent=[Agent];
-
-Centralized:
-    'centralized' name=ID 'coordinator' coordinator=[Agent];
-
-SharedMessagePool:
-    {infer SharedMessagePool} 'shared_message_pool';
-
-Decentralized:
-    {infer Decentralized} 'decentralized';
-
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
