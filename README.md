@@ -86,6 +86,7 @@ Define cómo se comunican los agentes entre sí. Se han descartado los paradigma
 
 _Nota: a priori se dejó a un lado la expresividad de los paradigmas de comunicación en favor de un enfoque más básico basado en componentes. Puede revisarse en iteraciones futuras._
 
+
 ---
 
 ## Restricciones (validator)
