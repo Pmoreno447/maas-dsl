@@ -231,6 +231,6 @@ esta base.
 
 **Referencias en el repositorio.**
 
-- Rama: [`feature/metamodelo-v4`](https://github.com/Pmoreno447/maas-dsl/tree/feature/metamodelo-v4)
+- Tag: `v0.4`
 
 
