@@ -33,6 +33,7 @@ DSL (Domain-Specific Language) para la especificación de sistemas multi-agente 
 
 ---
 
+
 ## Documentación del proyecto
 
 La carpeta [`docs/`](./docs/) contiene la documentación técnica del DSL más allá del código fuente:
