@@ -9,27 +9,26 @@ DSL (Domain-Specific Language) para la especificación de sistemas multi-agente 
 
 ---
 
+## Versionado
+
+El proyecto sigue una convención de versiones con tres niveles (`vX.Y.Z`):
+
+- **X** — versión de release. Permanece en `0` durante el desarrollo del TFG. Pasará a `1` cuando el sistema se considere completo y publicable.
+- **Y** — iteración del metamodelo. Incrementa cuando se introduce una nueva versión del metamodelo con cambios estructurales. El historial completo de iteraciones está en [`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md).
+- **Z** — iteración del generador de código sobre el metamodelo actual. Incrementa con cada nuevo módulo generado o mejora significativa del generador. El historial está en [`docs/evolucionGenerador.md`](./docs/evolucionGenerador.md).
+
+### Ejemplos
+
+| Tag | Significado |
+|---|---|
+| `v0.4.0` | Metamodelo v4 estable, generador vacío |
+| `v0.4.1` | MVP del generador de código |
+| `v0.5.0` | Nueva iteración del metamodelo (bifurcaciones) |
+
+---
 ## Estructura del proyecto
 
-| Paquete | Ruta | Descripción |
-|---|---|---|
-| **language** | [`packages/language/`](./packages/language/) | Núcleo: gramática, AST generado y validaciones |
-| **cli** | [`packages/cli/`](./packages/cli/) | Interfaz de línea de comandos |
-| **extension** | [`packages/extension/`](./packages/extension/) | Extensión VSCode con soporte de sintaxis |
-
-### Archivos clave
-
-- **Metamodelo (gramática):** [`packages/language/src/multi-agent-dsl.langium`](./packages/language/src/multi-agent-dsl.langium)
-  Define la sintaxis concreta y abstracta del DSL con Langium.
-
-- **AST generado:** [`packages/language/src/generated/ast.ts`](./packages/language/src/generated/ast.ts)
-  Generado automáticamente a partir de la gramática. No editar a mano.
-
-- **Restricciones / validaciones:** [`packages/language/src/multi-agent-dsl-validator.ts`](./packages/language/src/multi-agent-dsl-validator.ts)
-  Equivalente a restricciones OCL. Aquí se añaden las reglas bien-formedness que no se pueden expresar directamente en la gramática (unicidad de nombres, coherencia entre referencias, etc.).
-
-- **Módulo Langium:** [`packages/language/src/multi-agent-dsl-module.ts`](./packages/language/src/multi-agent-dsl-module.ts)
-  Wiring del servicio de lenguaje (parser, linker, validator).
+Para una descripción detallada de la estructura del proyecto y la configuración del entorno de desarrollo, consulta [`docs/estructura.md`](./docs/estructura.md).
 
 ---
 
@@ -38,6 +37,8 @@ DSL (Domain-Specific Language) para la especificación de sistemas multi-agente 
 La carpeta [`docs/`](./docs/) contiene la documentación técnica del DSL más allá del código fuente:
 
 - **[`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md)** — historial completo de las iteraciones del metamodelo, desde la versión base inspirada en Barriga et al. (2025) hasta la versión actual, incluyendo decisiones de diseño, alternativas descartadas y limitaciones detectadas en cada fase.
+
+- **[`docs/estructura.md`](./docs/estructura.md)** — descripción detallada de la estructura del proyecto, configuración de la compilación y flujo de trabajo de desarrollo.
 
 - **[`docs/prototipos/`](./docs/prototipos/)** — prototipos de validación del metamodelo. Cada prototipo contiene un modelo `.mad` escrito en el DSL, el código ejecutable que el generador debería producir a partir de ese modelo (implementado manualmente), y un informe Markdown con las limitaciones del metamodelo detectadas durante el ejercicio. Actualmente incluye:
   - [`research-assistant/`](./docs/prototipos/research-assistant/) — asistente de investigación con estructura de comunicación *centralized* y herramientas MCP externas.
@@ -104,11 +105,7 @@ _Nota: en iteraciones anteriores se exploró un enfoque alternativo basado en co
 ## Restricciones (validator)
 
 Las restricciones de bien-formedness que no pueden expresarse en la gramática se implementan en [`multi-agent-dsl-validator.ts`](./packages/language/src/multi-agent-dsl-validator.ts). Actualmente el validator es el generado por defecto de Langium; las restricciones específicas del DSL están **pendientes de implementar**.
-
-Restricciones planificadas (no exhaustivo):
-- Los niveles de `Layer` dentro de un `Layered` deben ser únicos.
-- `Centralized` debe referenciar un agente existente como coordinador.
-
+ 
 ---
 
 ## Instalación y uso

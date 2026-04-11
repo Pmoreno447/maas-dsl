@@ -49,3 +49,14 @@ export function extractDestinationAndName(filePath: string, destination: string 
         name: path.basename(filePath)
     };
 }
+
+export function toPythonType(type: string): string {
+    switch (type) {
+        case 'int':     return 'int';
+        case 'float':   return 'float';
+        case 'string':  return 'str';
+        case 'boolean': return 'bool';
+        default:        return 'str';
+    }
+}
+

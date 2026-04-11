@@ -1,9 +1,9 @@
-import type { Model } from 'multi-agent-dsl-language';
+import type { LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 import { createMultiAgentDslServices, MultiAgentDslLanguageMetaData } from 'multi-agent-dsl-language';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { extractAstNode } from './util.js';
-import { generateJavaScript } from './generator.js';
+import { generate } from './generator.js';
 import { NodeFileSystem } from 'langium/node';
 import * as url from 'node:url';
 import * as fs from 'node:fs/promises';
@@ -15,9 +15,9 @@ const packageContent = await fs.readFile(packagePath, 'utf-8');
 
 export const generateAction = async (fileName: string, opts: GenerateOptions): Promise<void> => {
     const services = createMultiAgentDslServices(NodeFileSystem).MultiAgentDsl;
-    const model = await extractAstNode<Model>(fileName, services);
-    const generatedFilePath = generateJavaScript(model, fileName, opts.destination);
-    console.log(chalk.green(`JavaScript code generated successfully: ${generatedFilePath}`));
+    const model = await extractAstNode<LLMMultiAgentSystem>(fileName, services);
+    generate(model, fileName, opts.destination);
+    console.log(chalk.green(`Código generado correctamente.`));
 };
 
 export type GenerateOptions = {
@@ -34,7 +34,7 @@ export default function(): void {
         .command('generate')
         .argument('<file>', `source file (possible file extensions: ${fileExtensions})`)
         .option('-d, --destination <dir>', 'destination directory of generating')
-        .description('generates JavaScript code that prints "Hello, {name}!" for each greeting in a source file')
+        .description('Genera el código Python del sistema multiagente a partir de un modelo .mad')
         .action(generateAction);
 
     program.parse(process.argv);
