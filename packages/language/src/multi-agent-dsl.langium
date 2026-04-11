@@ -31,10 +31,10 @@ Attribute:
 type Message = Trim | Mix | None | Summarize;
 
 Trim:
-    'trim' 'maxToken' maxToken = INT;
+    'trim' 'maxMessages' maxMessages = INT;
 
 Mix:
-    'mix' 'maxToken' maxToken = INT;
+    'mix' 'maxToken' maxToken = INT 'maxMessages' maxMessages = INT;
 
 None:
     {infer None} 'none';

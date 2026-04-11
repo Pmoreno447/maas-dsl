@@ -44,20 +44,6 @@ node packages/cli/bin/cli.js generate examples/miModelo.mad
 node packages/cli/bin/cli.js generate examples/miModelo.mad -d ./output
 ```
 
-## Notas sobre el CLI
-
-El paquete `cli` no disponía de un paso de compilación real en su configuración original generada por `yo langium`, ya que estaba pensado para distribuir el código fuente directamente. Se añadió un script `build` real en `packages/cli/package.json` para que el CLI se compile junto al resto del workspace:
-
-```json
-"build": "tsc"
-```
-
-Asimismo, el paquete `cli` requería la instalación del paquete `@types/node` para resolver correctamente los módulos de Node.js como `node:fs` y `node:path`:
-
-```bash
-npm install --save-dev @types/node
-```
-
 ## Notas sobre dependencias
 
 Durante la configuración inicial se detectaron vulnerabilidades en la dependencia `lodash` utilizada por `langium-cli`. La solución propuesta por npm (`npm audit fix --force`) fue descartada ya que implicaba una bajada de versión de `langium-cli` a una versión con cambios disruptivos. Dado que las vulnerabilidades afectan únicamente a herramientas de desarrollo y no al código generado, se optó por mantener la versión actual y no aplicar la corrección forzada.

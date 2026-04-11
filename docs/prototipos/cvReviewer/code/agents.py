@@ -4,10 +4,10 @@ from langchain.chat_models import init_chat_model
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
-from docs.prototipos.cvReviewer.code.prompt import EXTRACTOR, EVALUATOR, REPORT_GENERATOR, NOTIFIER
+from prompt import EXTRACTOR, EVALUATOR, REPORT_GENERATOR, NOTIFIER
 from pydantic import BaseModel, Field
-from docs.prototipos.cvReviewer.code.state import State
-from docs.prototipos.cvReviewer.code.tools.notifyByEmail import notifyByEmail
+from state import State
+from tools.notifyByEmail import notifyByEmail
 
 
 # Salidas de los nodos 

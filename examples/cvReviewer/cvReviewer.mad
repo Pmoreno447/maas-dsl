@@ -21,7 +21,7 @@
         // Mensajes (trimeado y resumen se pueden implementar en el generador sin problemas
         // opto por none para no perder tiempo en el código y así centrarme en evaluar el 
         // metamodelo)
-        none
+        summarize maxToken 4
     }
 
     profile Extractor description 
