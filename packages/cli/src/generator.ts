@@ -1,10 +1,12 @@
 import { generatePrompts } from './generators/promptGenerator.js';
 import { stateGenerator } from './generators/stateGenerator.js'
 import { generateEnvFiles } from './generators/configGenerator.js'
+import { agentsGenerator } from './generators/agentsGenerator.js'
 import type { LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 
 export function generate(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): void {
     generatePrompts(model, filePath, destination);
     stateGenerator(model, filePath, destination);
     generateEnvFiles(model, filePath, destination);
+    agentsGenerator(model, filePath, destination);
 }

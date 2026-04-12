@@ -53,8 +53,9 @@ Agent:
         'profile' profile=[Profile]
 
         //Recomendable
-        ('stateContext' stateContext+=[Attribute]*)?
-        ('stateUpdate' stateUpdate+=[Attribute]*)?
+        ('description' description+=STRING)?
+        ('stateContext' stateContext+=[Attribute]+)?
+        ('stateUpdate' stateUpdate+=[Attribute]+)?
 
         // Opcional
         ('temperature' temperature = INT)?

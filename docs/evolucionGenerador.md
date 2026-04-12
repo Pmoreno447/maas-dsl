@@ -23,3 +23,6 @@ contra el prototipo correspondiente.
   - MaxMessage en Trim y Mix
 - Se ha incluido un generador de archivos de configuración se genera un .env donde se tiene un template con algunas configuraciones que hay en el metamodelo como maxtokens y otras más privadas como las api keys de los LLM se quedan vacias para que el usuario las escriba, luego un config.py es generado para que se puedan usar desde cualquier otro archivo python y sin ser expuestas en github al subir el proyecto generado.
 - Se ha dejado fuera de esta iteración el tipo de gestión de mensaje MIX, que combina el resumen con guardar los ultimos mensajes dado que afectaria en como reciben el contexto los agentes y podría complicar el generador en esta primera iteracion, por lo que se deja para otras iteraciones.
+- Se ha dejado fuera de esta iteración el selector de modelos, genera automaticamente el gpt5nano para todos los casos
+- Se ha dejado fuera de esta iteración el uso de herramientas de los agentes.
+- algunas cosas que mejoren la calidad del codigo generado por ejemplo que la descripciond e los campos del structured output se defina como variable para por si lo usan varios nodos, tambien el nombre del modelo usado,por si algunos modelos estan repetidos, que no esté hardcodeado en todos.

@@ -1,15 +1,14 @@
-import os
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field # Structured outputs
+
+from langchain_core.messages import SystemMessage, HumanMessage # SOLO SI HAY HERRAMIENTAS, ToolMessage
+from prompt import EXTRACTOR, EVALUATOR, REPORT_GENERATOR, NOTIFIER
+from state import State
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
+
+from tools.notifyByEmail import notifyByEmail
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
-from prompt import EXTRACTOR, EVALUATOR, REPORT_GENERATOR, NOTIFIER
-from pydantic import BaseModel, Field
-from state import State
-from tools.notifyByEmail import notifyByEmail
-
-
+      
 # Salidas de los nodos 
 # Structured output del Extractor
 class ExtractorOutput(BaseModel):

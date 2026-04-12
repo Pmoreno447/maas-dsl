@@ -2,6 +2,7 @@ import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
 import { MultiAgentDslGeneratedModule, MultiAgentDslGeneratedSharedModule } from './generated/module.js';
 import { MultiAgentDslValidator, registerValidationChecks } from './multi-agent-dsl-validator.js';
+import { MultiAgentDslScopeProvider } from './multi-agent-dsl-scope-provider.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -24,6 +25,9 @@ export type MultiAgentDslServices = LangiumServices & MultiAgentDslAddedServices
  * selected services, while the custom services must be fully specified.
  */
 export const MultiAgentDslModule: Module<MultiAgentDslServices, PartialLangiumServices & MultiAgentDslAddedServices> = {
+    references: {
+        ScopeProvider: (services) => new MultiAgentDslScopeProvider(services)
+    },
     validation: {
         MultiAgentDslValidator: () => new MultiAgentDslValidator()
     }

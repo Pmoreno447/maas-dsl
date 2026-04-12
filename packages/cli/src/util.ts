@@ -60,3 +60,8 @@ export function toPythonType(type: string): string {
     }
 }
 
+export function toModel(type: String): string {
+    switch(type){
+        default: return 'openai:gpt-5-nano' 
+    }
+}

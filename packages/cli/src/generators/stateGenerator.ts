@@ -3,7 +3,6 @@ import { expandToNode, joinToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName } from '../util.js';
-import { isTrim, isMix, isNone, isSummarize, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
 import { resolveMessageConfig } from '../templates/reducers.js'
 import { toPythonType } from '../util.js';
 
@@ -11,10 +10,9 @@ export function stateGenerator(model: LLMMultiAgentSystem, filePath: string, des
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, 'state')}.py`;
 
-    // Lógica FUERA del template
+    // Lógica para obtener los imports y funciones necesarias en el state
     const message = resolveMessageConfig(model.envirement.messages)
 
-    // Template SOLO con strings y ${variables}
     const fileNode = expandToNode
 `
 # state.py
