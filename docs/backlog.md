@@ -2,12 +2,15 @@
 
 | Prioridad | Tarea | Descripción |
 |---|---|---|
-| 🔴 Alta | Restricciones de bien-formedness | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo completo en `restricciones.md`. |
-| 🔴 Alta | Mecanismo de inicio y fin del grafo | El generador actualmente no tiene forma de determinar cuál es el nodo inicial y cuál es el nodo final de una estructura de comunicación. Necesario para generar correctamente los edges `START` y `END` de LangGraph. |
-| 🔴 Alta | Mecanismos de bifurcación | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix y HumanInTheLoop. |
-| 🔴 Alta | Agentes usan herramientas | El generador de código aun no permite usar herramientas a los agentes. |
-| 🔴 Alta | Incluir selector de modelos | El generador de código asigna a los agentes el modelo gpt-5-nano. |
-| 🟡 Media | Human in the Loop | Añadir al metamodelo un mecanismo para declarar puntos de interrupción en el grafo donde un humano puede revisar o modificar el estado antes de continuar la ejecución. Requiere soporte de bifurcaciones previo. |
+| 🔴 Alta | Mecanismos de bifurcación | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. |
+| 🔴 Alta | Agentes usan herramientas | El generador de código aún no permite usar herramientas a los agentes. Se decidió no implementar solo herramientas Python en esta iteración porque la generación de herramientas MCP y Python difiere radicalmente, y hacerlo por separado obligaría a descartar código al unificarlas. Se abordará todo de una vez. |
+| 🔴 Alta | Restricciones de bien-formedness | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. |
+| 🔴 Alta | Configuración generada | El generador produce un `.env.template` y un `config.py`, pero las variables de API key del LLM están hardcodeadas para OpenAI tanto en el generador de configuración como en el de grafo. Debería variar según el modelo declarado en el metamodelo. |
+| 🟡 Media | Incluir selector de modelos | El generador asigna a todos los agentes el modelo `gpt-5-nano` por defecto, ignorando el atributo `model` del agente en el metamodelo (`gpt`, `claude`, `ollama`). |
+| 🟡 Media | Invocación del grafo | El generador produce un bloque de invocación y comprobación de resultados completamente provisional. El objetivo es que el código generado tenga calidad de producción con integración de LangSmith. |
+| 🟡 Media | Mecanismo de inicio y fin del grafo | Para la estructura `Layered` el inicio y fin se infieren correctamente a partir de las referencias `next`. Sin embargo, hace falta implementar algún mecanismo más para que cuando se mezclen distintas estructuras de comunicaición el generador sepa cuando generar los edges hacia start y end. |
+| 🟡 Media | Nodo resumen | El generador produce correctamente el nodo de resumen pero no lo integra en el grafo. Su conexión está bloqueada por la ausencia de bifurcaciones y por la ambigüedad de posición en grafos con múltiples estructuras. Ver `adr/002-summarize&mixReducer.md`. |
 | 🟡 Media | Summarize y Mix en el generador | Actualmente se genera el nodo de resumen pero no se conecta al grafo. Su integración completa está bloqueada por la ausencia de bifurcaciones y por la ambigüedad de posición en grafos con múltiples estructuras. Detalle en `adr/002-summarize&mixReducer.md`. |
+| 🟡 Media | Human in the Loop | Añadir al metamodelo un mecanismo para declarar puntos de interrupción en el grafo donde un humano puede revisar o modificar el estado antes de continuar la ejecución. Requiere soporte de bifurcaciones previo. |
+| 🟢 Baja | Generar código de mecanismo MIX | Permitir tanto que se guarden los x últimos mensajes como un resumen. Combinación de `trim` y `summarize`. |
 | 🟢 Baja | Flags en el CLI | Añadir opciones `--only` y `--skip` al comando `generate` para permitir activar o desactivar la generación de módulos individuales (state, prompts, agents, graph, tools). |
-| 🟢 Baja | Generar código de mecanismo MIX | Permitir tanto que se guarden los x últimos mensajes como un resumen |
