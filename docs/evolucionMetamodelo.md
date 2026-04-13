@@ -16,7 +16,7 @@ identificar de forma empírica las limitaciones del metamodelo.
 Los prototipos empleados en este proceso, junto con sus informes de fallos,
 se conservan en [`prototipos/`](./prototipos/).
 
-## Resumen de versiones
+## Resumen de versiones del metamodelo
 
 | Versión | Estado     | Ubicación                     | Descripción breve                                         |
 |---------|------------|-------------------------------|-----------------------------------------------------------|
