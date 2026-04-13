@@ -32,73 +32,68 @@ Para una descripción detallada de la estructura del proyecto y la configuració
 
 ---
 
-## Documentación del proyecto
+## Estructura de la documentación
 
-La carpeta [`docs/`](./docs/) contiene la documentación técnica del DSL más allá del código fuente:
+La carpeta `docs/` contiene toda la documentación de diseño y desarrollo del proyecto, organizada de la siguiente forma:
 
-- **[`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md)** — historial completo de las iteraciones del metamodelo, desde la versión base inspirada en Barriga et al. (2025) hasta la versión actual, incluyendo decisiones de diseño, alternativas descartadas y limitaciones detectadas en cada fase.
-
-- **[`docs/estructura.md`](./docs/estructura.md)** — descripción detallada de la estructura del proyecto, configuración de la compilación y flujo de trabajo de desarrollo.
-
-- **[`docs/prototipos/`](./docs/prototipos/)** — prototipos de validación del metamodelo. Cada prototipo contiene un modelo `.mad` escrito en el DSL, el código ejecutable que el generador debería producir a partir de ese modelo (implementado manualmente), y un informe Markdown con las limitaciones del metamodelo detectadas durante el ejercicio. Actualmente incluye:
-  - [`research-assistant/`](./docs/prototipos/research-assistant/) — asistente de investigación con estructura de comunicación *centralized* y herramientas MCP externas.
-  - [`cvReviewer/`](./docs/prototipos/cvReviewer/) — pipeline de evaluación de candidatos con estructura *layered* y herramienta Python local.
-
-Estos prototipos se emplean como mecanismo de validación empírica: antes de cerrar una iteración del metamodelo, se escriben modelos representativos y se genera manualmente el código esperado para identificar qué construcciones faltan o fallan.
-
----
-
-## Conceptos del metamodelo
-
-Un sistema se describe con la siguiente estructura raíz:
 ```
-{
-  environment ...
-  profile ...
-  tool ...
-  agent ...
-  <estructuras de comunicación> ...
-}
+docs/
+├── estructura.md              ← Este archivo
+├── evolucionMetamodelo.md
+├── evolucionGenerador.md
+├── restricciones.md
+├── backlog.md
+├── metamodelo.md
+├── adr/
+│   ├── 001-compilacionUnificada.md
+│   ├── 002-summarize&mixReducer.md
+│   ├── 003-scopeProviderAttributes.md
+│   └── 004-generadorEdges.md
+└── prototipos/
+    ├── cvReviewer/
+    │   ├── cvReviewer.mad
+    │   ├── cvReviewer.md
+    │   └── code/
+    └── research-assistant/
+        ├── research-assistant.mad
+        ├── research-assistant.md
+        └── code/
 ```
 
-### `Environment`
-Define el entorno en que opera el sistema MaaS. Se divide en tres sub-conceptos:
+### `evolucionMetamodelo.md`
 
-- **GameRules** — reglas generales expresadas como descripciones de texto. Funcionan como instrucciones de sistema globales. _Pendiente de revisión: evaluar si deben ser prompts estructurados o descripciones libres._
-- **Attributes** — atributos tipados del entorno (int / string / boolean) que representan estado compartido: usuario actual, localización, roles virtuales, etc. Desde v4 incluyen un campo de descripción obligatorio, empleado por el generador para construir esquemas de salida estructurada con metadatos coherentes.
-- **Messages** — mecanismo de gestión del historial de mensajes. Opciones: `trim` (recortar al superar N mensajes), `mix`, `summarize`, `none`.
+Registro completo del proceso iterativo de diseño del metamodelo del DSL, desde la v1 (basada en Barriga et al.) hasta la v4 actual. Documenta para cada versión los cambios introducidos, las limitaciones detectadas y las decisiones tomadas. Sirve como trazabilidad del diseño y como material de apoyo para la memoria del TFG.
 
-### `Profile`
-Actualmente se modela como un prompt de descripción textual asignado a un agente. Consideraciones:
+### `evolucionGenerador.md`
 
-- Para el **90% de los casos**, un prompt de descripción es suficiente.
-- Se valoró incluir atributos de estado mutables en tiempo de ejecución para que la IA pueda adaptar el comportamiento dinámicamente, pero añade complejidad innecesaria en la mayoría de casos y se reserva para escenarios con requisitos de idioma, rol dinámico, etc.
-- Alternativas estudiadas y descartadas por ahora:
-  - _Fine Tuning_: rígido, costoso.
-  - _Redes neuronales especializadas_: más flexible pero fuera del scope.
-  - _Entidad ontológica_: expresivo pero sin razonamiento directo.
+Registro del desarrollo incremental del generador de código. Documenta el estado de cada módulo generado (`prompt.py`, `config.py`, `state.py`, `agents.py`, `graph.py`), las decisiones y limitaciones de cada iteración, los cambios que el generador motivó en el metamodelo, y las instrucciones para ejecutar el código generado.
 
-### `Agent`
-Referencia un `Profile` y declara el modelo LLM a usar (`gpt` | `claude` | `ollama`). Desde v4, los agentes admiten además:
+### `restricciones.md`
 
-- **Parámetros de personalización por nodo** — configuración individual de cada agente (p. ej. temperatura, límites de tokens) para adaptar su comportamiento a su función dentro del sistema.
-- **Referencias a atributos del estado** — cada agente puede declarar referencias explícitas de lectura y/o escritura sobre los `attributes` del entorno. Estas referencias serán utilizadas por el generador para inyectar valores del estado en el contexto del modelo (lectura) y para construir esquemas de salida estructurada que actualicen el estado compartido (escritura).
+Catálogo de restricciones de bien-formedness (análogas a restricciones OCL) identificadas durante el desarrollo. Distingue entre restricciones ya implementadas en el validator de Langium y restricciones planificadas pendientes de implementación.
 
-### `Tool`
-Tres tipos de herramientas invocables por agentes:
-- `PythonTool` — módulo Python local.
-- `MCPTool` — servidor MCP remoto. Desde v4 admite un atributo `key` opcional para soportar servidores que requieran autenticación.
-- `EndPointTool` — endpoint REST (GET / POST / PUT / DELETE).
+### `backlog.md`
 
-### `CommunicationStructure`
-Define cómo se comunican los agentes entre sí. Se han descartado los paradigmas de comunicación abstractos (`CommunicationParadigm`) para simplificar. El foco actual está en definir _quién habla con quién_ mediante cuatro estructuras concretas:
+Lista priorizada de tareas pendientes del proyecto, clasificadas por prioridad (alta, media, baja). Incluye desde funcionalidades bloqueantes como los mecanismos de bifurcación y el soporte de herramientas en agentes, hasta mejoras de calidad como flags en el CLI o la invocación del grafo con integración de LangSmith.
 
-- `Layered` — organización en capas con niveles y referencias entre capas.
-- `Centralized` — un agente coordinador central.
-- `SharedMessagePool` — pool de mensajes compartido.
-- `Decentralized` — sin coordinación central.
+### `metamodelo.md`
+Esquema del metamodelo y explicación de qué es cada clase.
 
-_Nota: en iteraciones anteriores se exploró un enfoque alternativo basado en componentes de comportamiento reutilizables. Los detalles de esa exploración y por qué se volvió al modelo de estructuras de comunicación están documentados en [`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md)._
+### `adr/` — Architecture Decision Records
+
+Registros de decisiones arquitectónicas relevantes tomadas durante el desarrollo. Cada ADR sigue la estructura contexto–decisión–consecuencias:
+
+- **`001-compilacionUnificada.md`** — Justifica la unificación de `langium:generate` y `tsc` en un único comando `npm run build`, y la decisión de no aplicar `npm audit fix --force` para las vulnerabilidades de `lodash`.
+- **`002-summarize&mixReducer.md`** — Explica por qué el nodo de resumen de mensajes se genera pero no se conecta al grafo: el mecanismo solo tiene sentido en grafos cíclicos, y la posición es ambigua en grafos con múltiples estructuras de comunicación.
+- **`003-scopeProviderAttributes.md`** — Documenta la creación de un `ScopeProvider` personalizado en Langium para que las referencias `stateContext` y `stateUpdate` de los agentes puedan resolver los `Attribute` definidos dentro de `Environment`.
+- **`004-generadorEdges.md`** — Justifica la separación del generador de edges en un subdirectorio `generators/edges/` con un módulo por estructura de comunicación, anticipando el crecimiento por bifurcaciones y HumanInTheLoop.
+
+### `prototipos/` — Prototipos de validación del metamodelo
+
+Contiene los dos sistemas multiagente implementados manualmente para validar la expresividad del metamodelo antes de desarrollar el generador. Cada prototipo incluye el modelo `.mad`, el código Python implementado a mano y un informe de evaluación con las limitaciones detectadas:
+
+- **`research-assistant/`** — Asistente de investigación con cuatro agentes (organizador, investigador, redactor, validador) conectados mediante una estructura *centralized*, con herramientas MCP externas. Su informe (`research-assistant.md`) identificó limitaciones en flujo de control, gestión de herramientas, composición de estructuras y personalización de agentes.
+- **`cvReviewer/`** — Pipeline de evaluación de candidatos con cuatro agentes (extractor, evaluador, generador de informes, notificador) conectados mediante una estructura *layered*, con una herramienta Python local. Su informe (`cvReviewer.md`) reforzó la necesidad de mecanismos de interacción explícita entre agentes y estado compartido mediante *structured outputs*.
 
 ---
 
