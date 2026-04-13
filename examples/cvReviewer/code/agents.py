@@ -95,7 +95,7 @@ def nodeReportGenerator(state: State):
 def nodeNotifier(state: State):
     """"""
     result = modelNotifier.invoke(
-        [SystemMessage(content=REPORTGENERATOR)]
+        [SystemMessage(content=NOTIFIER)]
         + state["messages"]
         + [HumanMessage(content=f"""
             candidateName: {state["candidateName"]}

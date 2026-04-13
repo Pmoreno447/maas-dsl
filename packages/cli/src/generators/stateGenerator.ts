@@ -6,6 +6,7 @@ import { extractDestinationAndName } from '../util.js';
 import { resolveMessageConfig } from '../templates/reducers.js'
 import { toPythonType } from '../util.js';
 
+// ─── Generator ────────────────────────────────────────────────────────────────
 export function stateGenerator(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): string {
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, 'state')}.py`;
@@ -21,7 +22,7 @@ from typing_extensions import TypedDict
 from langgraph.graph.message import add_messages
 ${message.import}
 
-${message.function}
+${message.functionBefore}
 
 class State(TypedDict):
     # Mensajes
@@ -31,6 +32,8 @@ class State(TypedDict):
 ${joinToNode(model.envirement.attributes, attribute =>
 `    ${attribute.name}: Optional[${toPythonType(attribute.type)}]`
 , { appendNewLineIfNotEmpty: true })}
+
+${message.functionAfter}
 `.appendNewLineIfNotEmpty();
 
     if (!fs.existsSync(data.destination)) {

@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import { extractDestinationAndName } from '../util.js';
 import { isTrim, isMix, isSummarize, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function resolveMessageEnvVars(message: Trim | Mix | None | Summarize | undefined): string {
     if (isTrim(message)) {
         return `MAX_MESSAGES=${message.maxMessages}`;
@@ -29,6 +30,7 @@ MAX_TOKENS = int(os.getenv("MAX_TOKENS", 1000))`;
     return '';
 }
 
+// ─── Generator ────────────────────────────────────────────────────────────────
 export function generateEnvFiles(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): void {
     const data = extractDestinationAndName(filePath, destination);
 
@@ -40,6 +42,7 @@ export function generateEnvFiles(model: LLMMultiAgentSystem, filePath: string, d
 # API Keys
 LANGSMITH_API_KEY=
 LANGSMITH_PROJECT=
+OPENAI_API_KEY=
 
 # Configuración de mensajes
 ${messageEnvVars}
@@ -55,6 +58,7 @@ load_dotenv()
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Configuración de mensajes
 ${messageConfigVars}

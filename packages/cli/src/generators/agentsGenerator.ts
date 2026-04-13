@@ -1,9 +1,10 @@
-import type { LLMMultiAgentSystem, Agent, Attribute } from 'multi-agent-dsl-language';
-import { expandToNode, joinToNode, toString } from 'langium/generate';
+import type { LLMMultiAgentSystem, Agent } from 'multi-agent-dsl-language';
+import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName, toPythonType, toModel } from '../util.js';
+import { extractDestinationAndName, toPythonType, toModel, generateNodeName } from '../util.js';
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function isUsingTools(model: LLMMultiAgentSystem): boolean {
     return model.tools.length > 0;
 }
@@ -19,7 +20,7 @@ function generateStructuredOutput(agent: Agent): string {
     return `class ${className}(BaseModel):\n${fields}`;
 }
 
-function generateModels(agent: Agent): string {
+function generateModel(agent: Agent): string {
     const variableName = 'model' + agent.name.charAt(0).toUpperCase() + agent.name.slice(1);
     const className = agent.name.charAt(0).toUpperCase() + agent.name.slice(1) + 'Output';
 
@@ -40,9 +41,9 @@ function generateModels(agent: Agent): string {
     return line;
 }
 
-function generateNodes(agent: Agent): string {
+function generateNode(agent: Agent): string {
     const agentPascal = agent.name.charAt(0).toUpperCase() + agent.name.slice(1);
-    const nodeName = `node${agentPascal}`;
+    const nodeName = generateNodeName(agent);
     const modelName = `model${agentPascal}`;
     const profileName = agent.profile.ref!.name.toUpperCase();
     const description = agent.description?.[0] ?? '';
@@ -69,6 +70,7 @@ ${agent.stateContext.map(ref => `            ${ref.ref!.name}: {state["${ref.ref
     ${returnBlock}`;
 }
 
+// ─── Generator ────────────────────────────────────────────────────────────────
 export function agentsGenerator(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): string {
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, 'agents')}.py`;
@@ -89,11 +91,11 @@ export function agentsGenerator(model: LLMMultiAgentSystem, filePath: string, de
         .join('\n\n');
 
     const models = model.agents
-        .map(generateModels)
+        .map(generateModel)
         .join('\n');
 
     const nodes = model.agents
-        .map(generateNodes)
+        .map(generateNode)
         .join('\n\n');
 
 

@@ -3,6 +3,8 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { URI } from 'langium';
+import type {Agent } from 'multi-agent-dsl-language';
+
 
 export async function extractDocument(fileName: string, services: LangiumCoreServices): Promise<LangiumDocument> {
     const extensions = services.LanguageMetaData.fileExtensions;
@@ -64,4 +66,9 @@ export function toModel(type: String): string {
     switch(type){
         default: return 'openai:gpt-5-nano' 
     }
+}
+
+export function generateNodeName(agent: Agent): string {
+    const agentPascal = agent.name.charAt(0).toUpperCase() + agent.name.slice(1);
+    return `node${agentPascal}`;
 }

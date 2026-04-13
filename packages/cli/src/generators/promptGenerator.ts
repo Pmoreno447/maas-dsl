@@ -4,6 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName } from '../util.js';
 
+// ─── Generator ────────────────────────────────────────────────────────────────
 export function generatePrompts(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): string {
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, 'prompt')}.py`;

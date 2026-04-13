@@ -5,7 +5,8 @@ import { isTrim, isMix, isSummarize, type Trim, type Mix, type None, type Summar
 export interface MessageConfig {
     import: string;
     field: string;
-    function: string;
+    functionBefore: string;  // va antes de State (trim)
+    functionAfter: string;   // va después de State (summarize)
 }
 
 // ─── Plantillas ───────────────────────────────────────────────────────────────
@@ -13,7 +14,7 @@ export interface MessageConfig {
 const TRIM: MessageConfig = {
     import: 'from config import MAX_MESSAGES',
     field: 'messages: Annotated[list, trim_messages_reducer(MAX_MESSAGES)]',
-    function:
+    functionBefore:
 `def trim_messages_reducer(max_messages: int):
     """
     Devuelve un reducer que mantiene solo los últimos max_messages mensajes,
@@ -24,7 +25,8 @@ const TRIM: MessageConfig = {
         if len(updated) > max_messages:
             return [updated[0]] + updated[-(max_messages - 1):]
         return updated
-    return reducer`
+    return reducer`,
+    functionAfter: '',
 };
 
 const SUMMARIZE: MessageConfig = {
@@ -34,7 +36,8 @@ from langchain_openai import ChatOpenAI
 import tiktoken
 from config import MAX_TOKENS`,
     field: 'messages: Annotated[list, add_messages]',
-    function:
+    functionBefore: '',
+    functionAfter:
 `llm = ChatOpenAI(model="gpt-4o")
 
 def count_tokens(messages: list[BaseMessage]) -> int:
@@ -78,19 +81,21 @@ async def summary_node(state: State):
             *to_delete,
             SystemMessage(content=new_summary.content, name="__summary__")
         ]
-    }`
+    }`,
 };
 
 const MIX: MessageConfig = {
     import: '# Falta por desarrollar: mix',
     field: '# Falta por desarrollar: campo messages para mix',
-    function: '# Falta por desarrollar: reducer para mix',
+    functionBefore: '# Falta por desarrollar: reducer para mix',
+    functionAfter: '',
 };
 
 const NONE: MessageConfig = {
     import: 'from langgraph.graph.message import add_messages',
     field: 'messages: Annotated[list, add_messages]',
-    function: '',
+    functionBefore: '',
+    functionAfter: '',
 };
 
 // ─── Resolver ─────────────────────────────────────────────────────────────────
