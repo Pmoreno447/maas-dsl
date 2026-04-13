@@ -1,9 +1,10 @@
 # graph.py
 import asyncio
-from langchain_core.messages import HumanMessage
+
+from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
-from docs.prototipos.cvReviewer.code.state import State
-from docs.prototipos.cvReviewer.code.agents import nodoExtractor, nodoEvaluator, nodoReportGenerator, nodoNotifier
+from state import State, trim_messages_reducer
+from agents import nodoExtractor, nodoEvaluator, nodoReportGenerator, nodoNotifier
 
 
 # Construcción del grafo
@@ -40,6 +41,15 @@ async def main():
     result = await graph.ainvoke({
         "messages": [HumanMessage(content=cv_text)]
     })
+
+    # Simula añadir mensajes extra para probar el trim
+    reducer = trim_messages_reducer(max_messages=2)
+    result["messages"] = reducer(result["messages"], [AIMessage(content="Mensaje extra 1")])
+    result["messages"] = reducer(result["messages"], [AIMessage(content="Mensaje extra 2")])
+
+    print("\n💬 MENSAJES EN EL STATE:")
+    for i, msg in enumerate(result["messages"]):
+        print(f"  [{i}] {type(msg).__name__}: {msg.content[:100]}...")
 
     print("\n📋 INFORME FINAL:")
     print(result["reportText"])

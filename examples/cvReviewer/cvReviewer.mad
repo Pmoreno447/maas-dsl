@@ -1,0 +1,123 @@
+{
+    environment Reclutamiento {
+        // Criterios para evaluar el cvc
+        attribute candidateName type string description "Nombre del candidato"
+        attribute candidateEmail type string description "Email del candidato"
+        attribute yearsExperience type int description "Años de experiencia del candidato"
+        attribute skills type string description "Habilidades concretas del candidato"
+        attribute educationLevel type string description "Estudios superiores del candidato"
+        attribute language type string description "Idiomas que habla el candidato"
+
+        // Datos de la evaluacion
+        attribute score type int description "Puntuación otorgada del 1 al 10"
+        attribute meetRequirement type boolean description "True si cumple los requisitos de puntuación, false si no lo hace"
+        attribute strengths type string description "Puntos fuertes del candidato"
+        attribute weaknesses type string description "Puntos débiles del candidato"
+
+        // Datos del informe
+        attribute reportText type string description "Texto resumen del candidato"
+        attribute recommendation type string description "Solo puede ser uno de los siguientes valores: Contratar, Descartar, Considerar"
+
+        // Mensajes (trimeado y resumen se pueden implementar en el generador sin problemas
+        // opto por none para no perder tiempo en el código y así centrarme en evaluar el 
+        // metamodelo)
+
+        //summarize maxToken 4
+        //trim maxMessages 3
+        none
+    }
+
+    profile Extractor description 
+    "
+Eres un extractor de datos de RRHH experto. Dado el texto bruto de un CV, extrae la siguiente información de forma estructurada:
+    - Nombre completo del candidato
+    - Años totales de experiencia profesional
+    - Lista de habilidades técnicas
+    - Nivel de estudios más alto (grado, máster, doctorado)
+    - Idiomas y nivel de competencia
+
+Sé preciso y extrae únicamente la información mencionada explícitamente en el CV. Si no encuentras algún campo, devuelve null.
+    "
+
+    profile Evaluator description
+    "
+Eres un evaluador senior de RRHH. Estamos buscando un desarrollador backend con el siguiente perfil:
+
+    - Mínimo 3 años de experiencia en desarrollo backend
+    - Dominio de Python
+    - Experiencia con contenedores (Docker o Kubernetes)
+    - Conocimientos de bases de datos relacionales (PostgreSQL, MySQL o similar)
+    - Nivel de inglés mínimo B1
+    - Estudios en Ingeniería Informática o similar
+
+Dado los datos estructurados extraídos del CV del candidato, evalúa su perfil y proporciona:
+    - Una puntuación del 0 al 10 según cómo encaja el candidato con los requisitos anteriores
+    - Un booleano indicando si el candidato cumple los requisitos mínimos
+    - Una lista de puntos fuertes relevantes para el puesto
+    - Una lista de puntos débiles o requisitos que no cumple
+
+Sé objetivo y basa tu evaluación estrictamente en los datos extraídos frente a los requisitos del puesto.
+    "
+
+    profile ReportGenerator description
+    "
+Eres un redactor de informes de RRHH. Dado los datos extraídos del candidato y los resultados de su evaluación, genera un informe profesional y conciso para el equipo de RRHH que incluya:
+    - Un breve resumen del candidato
+    - La puntuación de la evaluación e indicación de si cumple los requisitos mínimos
+    - Puntos fuertes y débiles principales
+    - Una recomendación final: 'contratar', 'descartar' o 'considerar'
+
+Escribe en un tono claro y profesional adecuado para la toma de decisiones de RRHH. 
+    "
+
+    profile Notifier description
+    "
+Eres un asistente de notificaciones de RRHH. Dado el resultado de la evaluación de un candidato, tu tarea es:
+    - Comprobar si la puntuación del candidato es estrictamente superior a 8
+    - Si la puntuación supera el 8, redactar un correo electrónico dirigido al propio candidato felicitándolo e informándole de que su perfil ha sido preseleccionado para el puesto, indicándole que el equipo de RRHH se pondrá en contacto con él próximamente para los siguientes pasos del proceso de selección
+    - Si la puntuación es 8 o inferior, no enviar ningún correo y simplemente indicar que el candidato no alcanza el umbral de notificación
+
+El tono del correo debe ser cálido, profesional y motivador. No reveles la puntuación numérica al candidato. No inventes datos: utiliza únicamente la información recibida del informe de evaluación.
+    "
+    
+    // Herramientas
+    pythonTool notifyByEmail description "Herramienta para notificar por correo electronico" 
+        params {email type string}
+        modulePath "Example"
+
+    // Agentes
+    agent Extractor {
+        model gpt
+        profile Extractor
+        stateUpdate candidateName candidateEmail yearsExperience skills educationLevel language
+    }
+
+    agent Evaluator {
+        model gpt
+        profile Evaluator
+        stateContext candidateName candidateEmail yearsExperience skills educationLevel language
+        stateUpdate score meetRequirement strengths weaknesses
+    }
+
+    agent ReportGenerator {
+        model gpt
+        profile ReportGenerator
+        stateContext candidateName candidateEmail yearsExperience skills educationLevel language score meetRequirement strengths weaknesses
+        stateUpdate reportText recommendation
+    }
+
+    agent Notifier {
+        model gpt
+        profile Notifier
+        stateContext candidateName candidateEmail score reportText recommendation
+        tools notifyByEmail
+    }
+
+    // Modelo de comunicacion
+    layered Grafo {
+        layer NotifierLayer level 4 agent Notifier
+        layer ReportLayer level 3 next NotifierLayer agent ReportGenerator
+        layer EvaluatorLayer level 2 next ReportLayer agent Evaluator
+        layer ExtractorLayer level 1 next EvaluatorLayer agent Extractor 
+    }
+}
