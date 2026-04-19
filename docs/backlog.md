@@ -20,7 +20,7 @@
 
 ## Tareas completadas
 
-| Prioridad | Tarea | Descripción |
-|---|---|---|
-| 🔴 Alta | Configuración generada | El generador produce un `.env.template` y un `config.py`, pero las variables de API key del LLM están hardcodeadas para OpenAI tanto en el generador de configuración como en el de grafo. Debería variar según el modelo declarado en el metamodelo. |
-| 🟡 Media | Incluir selector de modelos | El generador asigna a todos los agentes el modelo `gpt-5-nano` por defecto, ignorando el atributo `model` del agente en el metamodelo (`gpt`, `claude`, `ollama`). |
+| Prioridad | Tarea | Descripción |  Comentario |
+|---|---|---|---|
+| 🔴 Alta | Configuración generada | El generador produce un `.env.template` y un `config.py`, pero las variables de API key del LLM están hardcodeadas para OpenAI tanto en el generador de configuración como en el de grafo. Debería variar según el modelo declarado en el metamodelo. | Generado el documento [Adr005](./adr/005-modelosPorProvider.md)|
+| 🟡 Media | Incluir selector de modelos | El generador asigna a todos los agentes el modelo `gpt-5-nano` por defecto, ignorando el atributo `model` del agente en el metamodelo (`gpt`, `claude`, `ollama`). | . |

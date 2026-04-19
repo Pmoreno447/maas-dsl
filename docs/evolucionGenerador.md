@@ -9,7 +9,7 @@ El generador se desarrolla de forma incremental, siguiendo el mismo ciclo iterat
 | Módulo | Archivo generado | Estado | Versión metamodelo |
 |---|---|---|---|
 | Prompts | `prompt.py` | ✅ Completo | v4 |
-| Configuración | `.env.template` + `config.py` | 🟡 Parcial | v4 |
+| Configuración | `.env.template` + `config.py` | ✅ Completo | v4 |
 | Estado | `state.py` | 🟡 Parcial | v4 |
 | Agentes | `agents.py` | 🟡 Parcial | v4 |
 | Grafo | `graph.py` | 🟡 Parcial | v4 |
