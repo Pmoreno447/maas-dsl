@@ -43,13 +43,17 @@ Summarize:
     'summarize' 'maxToken' maxToken = INT;
 
 // A partir de ahora, se define todo lo relacionado con los agentes individuales:
-ModelType returns string:
-    'gpt' | 'claude' | 'ollama';
+// El proveedor es estático (impacta a la generación: API keys, imports). El
+// modelo es un STRING libre validado contra una lista curada por proveedor en
+// models.json (ver Validator y CompletionProvider).
+ProviderType returns string:
+    'openai' | 'anthropic' | 'ollama' | 'google';
 
 Agent:
     'agent' name=ID '{'
         //Necesario
-        'model' model=ModelType
+        'provider' provider=ProviderType
+        'model' model=STRING
         'profile' profile=[Profile]
 
         //Recomendable

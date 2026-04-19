@@ -28,24 +28,28 @@
 
     // Agentes
     agent Organizador {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Organizador
     }
 
     agent Investigador {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Investigador
         tools Tavily
         
     }
 
     agent Redactor {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Redactor
     }
 
     agent Validador {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Validador
     }
 

@@ -25,7 +25,7 @@ function generateModel(agent: Agent): string {
     const className = agent.name.charAt(0).toUpperCase() + agent.name.slice(1) + 'Output';
 
     const params: string[] = [
-        `model="${toModel(agent.model)}"`,
+        `model="${toModel(agent)}"`,
         `temperature=${agent.temperature ?? 0}`,
     ];
     if (agent.maxToken)   params.push(`max_tokens=${agent.maxToken}`);

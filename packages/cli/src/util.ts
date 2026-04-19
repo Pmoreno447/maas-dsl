@@ -62,10 +62,8 @@ export function toPythonType(type: string): string {
     }
 }
 
-export function toModel(type: String): string {
-    switch(type){
-        default: return 'openai:gpt-5-nano' 
-    }
+export function toModel(agent: Agent): string {
+    return `${agent.provider}:${agent.model}`;
 }
 
 export function generateNodeName(agent: Agent): string {
