@@ -28,6 +28,7 @@ function generateModel(agent: Agent): string {
         `model="${toModel(agent)}"`,
         `temperature=${agent.temperature ?? 0}`,
     ];
+    if (agent.provider === 'ollama') params.push(`base_url=OLLAMA_BASE_URL`);
     if (agent.maxToken)   params.push(`max_tokens=${agent.maxToken}`);
     if (agent.timeOut)    params.push(`timeout=${agent.timeOut}`);
     if (agent.maxRetries) params.push(`max_retries=${agent.maxRetries}`);
@@ -83,6 +84,8 @@ export function agentsGenerator(model: LLMMultiAgentSystem, filePath: string, de
         agent => agent.stateUpdate && agent.stateUpdate.length > 0
     );
 
+    const usesOllama = model.agents.some(agent => agent.provider === 'ollama');
+
     const profileNames = model.profiles.map(p => p.name.toUpperCase()).join(', ');
 
     const structuredOutputs = model.agents
@@ -105,6 +108,7 @@ ${messageImports}
 from prompt import ${profileNames}
 from state import State
 from langchain.chat_models import init_chat_model
+${usesOllama ? 'from config import OLLAMA_BASE_URL' : ''}
 ${hasStructuredOutputs ? 'from pydantic import BaseModel, Field' : ''}
 # Importar herramientas (pendiente siguiente iteración)
 

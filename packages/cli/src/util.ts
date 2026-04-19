@@ -3,7 +3,8 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { URI } from 'langium';
-import type {Agent } from 'multi-agent-dsl-language';
+import type { Agent } from 'multi-agent-dsl-language';
+import { isKnownProvider } from 'multi-agent-dsl-language';
 
 
 export async function extractDocument(fileName: string, services: LangiumCoreServices): Promise<LangiumDocument> {
@@ -69,4 +70,23 @@ export function toModel(agent: Agent): string {
 export function generateNodeName(agent: Agent): string {
     const agentPascal = agent.name.charAt(0).toUpperCase() + agent.name.slice(1);
     return `node${agentPascal}`;
+}
+
+export function resolveApiKeyEnvVar(agent: Agent): string | null {
+    if (!isKnownProvider(agent.provider)) return null;
+    switch (agent.provider) {
+        case 'openai':    return 'OPENAI_API_KEY';
+        case 'anthropic': return 'ANTHROPIC_API_KEY';
+        case 'google':    return 'GOOGLE_API_KEY';
+        case 'ollama':    return 'OLLAMA_BASE_URL';
+    }
+}
+
+export function collectApiKeyEnvVars(agents: Agent[]): string[] {
+    const keys = new Set<string>();
+    for (const agent of agents) {
+        const key = resolveApiKeyEnvVar(agent);
+        if (key) keys.add(key);
+    }
+    return [...keys];
 }

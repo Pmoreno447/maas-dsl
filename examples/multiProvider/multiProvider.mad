@@ -1,0 +1,74 @@
+{
+    environment MultiProvider {
+        attribute topic type string description "Tema sobre el que se investiga"
+        attribute research type string description "Notas de investigación recopiladas"
+        attribute draft type string description "Borrador del artículo"
+        attribute critique type string description "Crítica del borrador"
+        attribute finalText type string description "Texto final revisado"
+
+        none
+    }
+
+    profile Researcher description
+    "
+Eres un investigador. Dado un tema, recopila los hechos y referencias más relevantes
+en forma de notas estructuradas y breves.
+    "
+
+    profile Writer description
+    "
+Eres un redactor. A partir de unas notas de investigación, redacta un borrador claro
+y bien estructurado sobre el tema.
+    "
+
+    profile Critic description
+    "
+Eres un crítico editorial. Lee el borrador y proporciona una crítica constructiva
+señalando puntos fuertes, débiles y sugerencias concretas de mejora.
+    "
+
+    profile Editor description
+    "
+Eres un editor final. Integra las sugerencias de la crítica sobre el borrador y produce
+el texto final pulido, manteniendo el tono y estructura originales.
+    "
+
+    agent Researcher {
+        provider openai
+        model "gpt-5-mini"
+        profile Researcher
+        stateContext topic
+        stateUpdate research
+    }
+
+    agent Writer {
+        provider anthropic
+        model "claude-sonnet-4-6"
+        profile Writer
+        stateContext topic research
+        stateUpdate draft
+    }
+
+    agent Critic {
+        provider google
+        model "gemini-2.5-flash"
+        profile Critic
+        stateContext draft
+        stateUpdate critique
+    }
+
+    agent Editor {
+        provider ollama
+        model "llama3.1"
+        profile Editor
+        stateContext draft critique
+        stateUpdate finalText
+    }
+
+    layered Pipeline {
+        layer EditorLayer level 4 agent Editor
+        layer CriticLayer level 3 next EditorLayer agent Critic
+        layer WriterLayer level 2 next CriticLayer agent Writer
+        layer ResearcherLayer level 1 next WriterLayer agent Researcher
+    }
+}
