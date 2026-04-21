@@ -1,4 +1,5 @@
 ## Metamodelo
+* **Última Actualización:** 21/04/2026
 
 ![Metamodelo](./media/Metamodel.webp)
 
@@ -59,7 +60,8 @@ Define un agente individual dentro del sistema. Referencia un `Profile` (su prom
 
 | Atributo   | Descripcion                                                         |
 |------------|---------------------------------------------------------------------|
-| `model`    | Modelo LLM a utilizar: `gpt`, `claude`, `ollama`, ...                  |
+| `provider`    | Proovedor del modelo seleccionado. Lista limitada            |
+| `model`    | Modelo LLM a utilizar: `gpt`, `claude`, `ollama`, ... Es un string que es validado a través de una lista en .json                 |
 | `profile`  | Referencia al `Profile` que define el prompt de sistema del agente.  |
 
 **Recomendables:**
@@ -90,9 +92,9 @@ Define herramientas que los agentes pueden utilizar para interactuar con sistema
 
 Herramienta implementada como un módulo Python local. Además de la base común, requiere la ruta al módulo (`modulePath`).
 
-#### `MCPTool`
+#### `MCPServer`
 
-Herramienta que conecta con un servidor MCP (Model Context Protocol) remoto. Define la URL del servidor (`serverUrl`), el tipo de transporte (`transport`) y, opcionalmente, una clave de autenticación (`key`).
+Herramienta que conecta con un servidor MCP (Model Context Protocol) remoto. Define la URL del servidor (`serverUrl`), el tipo de transporte (`transport`), opcionalmente, una clave de autenticación (`key`) y una lista de nombres de tools tools (`tools`), de forma que si vamos a usar varias herramientas de un mismo server solo necesitemos una conexión con dicho server.
 
 ---
 

@@ -32,7 +32,7 @@ se conservan en [`prototipos/`](./prototipos/).
 
 ---
 
-## v1 — Metamodelo base de Barriga et al.
+## v1 — Metamodelo base de Barriga.
 
 **Origen.** Esta primera iteración toma como punto de partida el metamodelo
 propuesto en el artículo *Model-Driven Development Toward LLM-Based
