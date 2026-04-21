@@ -87,27 +87,31 @@ El tono del correo debe ser cálido, profesional y motivador. No reveles la punt
 
     // Agentes
     agent Extractor {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Extractor
         stateUpdate candidateName candidateEmail yearsExperience skills educationLevel language
     }
 
     agent Evaluator {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Evaluator
         stateContext candidateName candidateEmail yearsExperience skills educationLevel language
         stateUpdate score meetRequirement strengths weaknesses
     }
 
     agent ReportGenerator {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile ReportGenerator
         stateContext candidateName candidateEmail yearsExperience skills educationLevel language score meetRequirement strengths weaknesses
         stateUpdate reportText recommendation
     }
 
     agent Notifier {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Notifier
         stateContext candidateName candidateEmail score reportText recommendation
         tools notifyByEmail

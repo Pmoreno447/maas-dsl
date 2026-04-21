@@ -1,0 +1,59 @@
+{
+    environment McpTools {
+        none
+    }
+
+    profile Searcher description
+    "
+Eres un agente de búsqueda. Usa las herramientas disponibles para buscar
+información relevante sobre lo que te pidan y responde con lo que encuentres.
+    "
+
+    profile Formatter description
+    "
+Eres un agente de formateo. Usa la herramienta disponible para formatear
+el texto recibido y devuelve el resultado formateado.
+    "
+
+    profile Responder description
+    "
+Eres un agente de respuesta final. A partir del historial de mensajes,
+sintetiza una respuesta clara y concisa.
+    "
+
+    mcpServer Tavily {
+        url "https://mcp.tavily.com/mcp/?tavilyApiKey={key}"
+        transport "streamable_http"
+        apiKeyName "TAVILY_API_KEY"
+        tools "tavily_search", "tavily_extract"
+    }
+
+    pythonTool prueba description "Herramienta de prueba local"
+        modulePath "prueba"
+
+    agent Searcher {
+        provider openai
+        model "gpt-4o-mini"
+        profile Searcher
+        tools Tavily
+    }
+
+    agent Formatter {
+        provider openai
+        model "gpt-4o-mini"
+        profile Formatter
+        tools prueba
+    }
+
+    agent Responder {
+        provider openai
+        model "gpt-4o-mini"
+        profile Responder
+    }
+
+    layered Pipeline {
+        layer ResponderLayer level 3 agent Responder
+        layer FormatterLayer level 2 next ResponderLayer agent Formatter
+        layer SearcherLayer level 1 next FormatterLayer agent Searcher
+    }
+}

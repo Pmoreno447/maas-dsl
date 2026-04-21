@@ -2,8 +2,7 @@ import type { Agent, LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName } from '../util.js';
-import { generateNodeName } from '../util.js'
+import { extractDestinationAndName, generateNodeName, collectApiKeyEnvVars } from '../util.js';
 import { generateEdges } from './edges/index.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -18,18 +17,24 @@ export function generateGraph(model: LLMMultiAgentSystem, filePath: string, dest
     const generatedFilePath = `${path.join(data.destination, 'graph')}.py`;
 
     const nodeNames = model.agents.map(a => generateNodeName(a)).join(', ');
-    const addNodes = model.agents.map(a => generateRegisterNode(a)).join('\n'); 
+    const addNodes = model.agents.map(a => generateRegisterNode(a)).join('\n');
 
     const edges = generateEdges(model);
+
+    const apiKeys = collectApiKeyEnvVars(model.agents).filter(k => k !== 'OLLAMA_BASE_URL');
+    const apiKeyImports = apiKeys.length > 0
+        ? `from config import ${apiKeys.join(', ')}`
+        : '';
+    const apiKeyEnvAssignments = apiKeys.map(k => `os.environ["${k}"] = ${k}`).join('\n');
 
     const fileNode = expandToNode
 `from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, START, END
 from state import State
 import os
-from config import OPENAI_API_KEY
+${apiKeyImports}
 
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY # HARDCODEADO EN EL GENERADOR, PROVISIONAL
+${apiKeyEnvAssignments}
 
 from agents import ${nodeNames}
 
@@ -45,15 +50,6 @@ ${edges}
 # Compilar
 graph = builder.compile()
 
-# Ejecucion (Provisional, solo para probar en las primeras iteraciones del generador)
-entrada = """
-    # Rellenar
-"""
-
-result = graph.invoke({
-    "messages": [HumanMessage(content=entrada)]
-})
-
 def print_state(result: dict):
     print("💬 MENSAJES:")
     for i, msg in enumerate(result.get("messages", [])):
@@ -65,7 +61,19 @@ def print_state(result: dict):
         if key != "messages":
             print(f"  {key}: {value}")
 
-print_state(result)`.appendNewLineIfNotEmpty();
+# Ejecucion (Provisional, solo para probar en las primeras iteraciones del generador)
+import asyncio
+
+async def main():
+    entrada = """
+    # Rellenar
+"""
+    result = await graph.ainvoke({
+        "messages": [HumanMessage(content=entrada)]
+    })
+    print_state(result)
+
+asyncio.run(main())`.appendNewLineIfNotEmpty();
 
     if (!fs.existsSync(data.destination)) {
         fs.mkdirSync(data.destination, { recursive: true });

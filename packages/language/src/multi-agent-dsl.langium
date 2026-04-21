@@ -4,7 +4,7 @@ entry LLMMultiAgentSystem:
     '{'
         envirement=Environment
         profiles+=Profile*
-        tools+=(PythonTool | MCPTool | EndPointTool)*
+        tools+=(PythonTool | MCPServer )*
         agents+=Agent*
         communicationStructures+=(Layered | SharedMessagePool | Centralized | Decentralized)*
     '}';
@@ -43,13 +43,17 @@ Summarize:
     'summarize' 'maxToken' maxToken = INT;
 
 // A partir de ahora, se define todo lo relacionado con los agentes individuales:
-ModelType returns string:
-    'gpt' | 'claude' | 'ollama';
+// El proveedor es estático (impacta a la generación: API keys, imports). El
+// modelo es un STRING libre validado contra una lista curada por proveedor en
+// models.json (ver Validator y CompletionProvider).
+ProviderType returns string:
+    'openai' | 'anthropic' | 'ollama' | 'google';
 
 Agent:
     'agent' name=ID '{'
         //Necesario
-        'model' model=ModelType
+        'provider' provider=ProviderType
+        'model' model=STRING
         'profile' profile=[Profile]
 
         //Recomendable
@@ -68,7 +72,7 @@ Agent:
 Profile:
     'profile' name=ID 'description' profileDescription=STRING;
 
-type Tool = PythonTool | MCPTool | EndPointTool;
+type Tool = PythonTool | MCPServer ;
 
 fragment ToolBase:
     name=ID 
@@ -81,21 +85,14 @@ Param:
 PythonTool:
     'pythonTool' ToolBase 'modulePath' modulePath=STRING;
 
-MCPTool:
-    'mcpTool' ToolBase'{'
-        'serverUrl' serverUrl=STRING
-        'transport' transport=STRING
-        ('key' key=STRING)?
-    '}';
-
-MethodType returns string:
-    'GET' | 'POST' | 'PUT' | 'DELETE';
-
-EndPointTool:
-    'endpointTsool' ToolBase'{'
+MCPServer:
+    'mcpServer' name=ID '{'
         'url' url=STRING
-        'method' method=MethodType
+        'transport' transport=STRING
+        ('apiKeyName' apiKeyName=STRING)?
+        'tools' tools+=STRING (',' tools+=STRING)*
     '}';
+
 
 // A partir de aquí, se define la ultima parte del metamodelo, la cual indica como se comunican entre sí los distintos agentes
 // Se ha omitido CommunicationModel porque se ha descartado CommunicationParadigm 

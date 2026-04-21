@@ -77,22 +77,26 @@
 
     // Agentes
     agent Extractor {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Extractor
     }
 
     agent Evaluator {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile Evaluator
     }
 
     agent ReportGenerator {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile ReportGenerator
     }
 
     agent Notifier {
-        model gpt
+        provider openai
+        model "gpt-5-nano"
         profile ReportGenerator
         tools notifyByEmail
     }

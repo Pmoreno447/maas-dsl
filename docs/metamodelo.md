@@ -94,10 +94,6 @@ Herramienta implementada como un módulo Python local. Además de la base común
 
 Herramienta que conecta con un servidor MCP (Model Context Protocol) remoto. Define la URL del servidor (`serverUrl`), el tipo de transporte (`transport`) y, opcionalmente, una clave de autenticación (`key`).
 
-#### `EndPointTool`
-
-Herramienta que invoca un endpoint REST. Define la URL del endpoint (`url`) y el método HTTP (`method`: `GET`, `POST`, `PUT` o `DELETE`).
-
 ---
 
 ### `CommunicationStructure`
