@@ -83,18 +83,8 @@ práctica.
 ## Decisión
 
 Se modifica `MCPTool` para que cada declaración represente **una tool
-concreta de un servidor MCP**. Se añade el campo obligatorio `toolName`
+concreta de un servidor MCP**. Se usa el campo  `name` de toolBase
 con el nombre exacto de la tool en el servidor:
-
-```langium
-MCPTool:
-    'mcpTool' ToolBase '{'
-        'serverUrl' serverUrl=STRING
-        'transport' transport=STRING
-        'toolName' toolName=STRING
-        ('key' key=STRING)?
-    '}';
-```
 
 El nombre del `mcpTool` en el DSL (`name=ID` heredado de `ToolBase`) sigue
 siendo el identificador local que usan los agentes para referenciarlo;
@@ -129,3 +119,85 @@ duplicación queda en la sintaxis del DSL, no en el código generado).
   correspondiente para cada declaración.
 - Los `.mad` que usaran la sintaxis anterior de `MCPTool` (sin
   `toolName`) son incompatibles con la gramática actual y deben migrarse.
+
+## Revisión posterior — adopción de la Alternativa B
+
+Durante la implementación del generador aparecieron problemas que la
+decisión original no había anticipado y que obligaron a revisitar la
+Alternativa B descartada en este mismo ADR.
+
+**Lo que falló en la práctica:**
+
+1. **La API key pertenece al server, no a la tool.** Al añadir un campo
+   `apiKeyName` a `MCPTool` para declarar la env var correspondiente, cada
+   declaración del mismo server tenía que repetirlo. Eso introdujo la
+   posibilidad de declarar `apiKeyName` incoherentes entre tools del mismo
+   `serverUrl`, obligando al generador a elegir (¿la primera? ¿warning?
+   ¿error de validación?). Cualquier opción era o mágica o ruidosa.
+2. **`transport` sufre el mismo problema.** Es una propiedad del server,
+   no de la tool. Repetirlo invita a la inconsistencia.
+3. **`description` y `params` eran redundantes.** El protocolo MCP expone
+   esa información vía `tools/list` en runtime, así que declararla en el
+   `.mad` era duplicar datos que el cliente ya obtiene del server. Y el
+   agente los usa desde la respuesta del server, no desde el DSL.
+4. **Agrupar por `serverUrl` en el generador** resolvía 1 y 2 a cambio
+   de validación cruzada entre declaraciones — lógica de coherencia que
+   no existiría si la información estuviera en el sitio correcto.
+
+**Lo que se adopta:** la Alternativa B descrita más arriba, con una
+modificación: el subconjunto de tools a usar se declara como lista de
+strings dentro del propio `mcpServer`, en vez de cada tool siendo una
+declaración independiente.
+
+```langium
+MCPServer:
+    'mcpServer' name=ID '{'
+        'url' url=STRING
+        'transport' transport=STRING
+        ('apiKeyName' apiKeyName=STRING)?
+        'tools' tools+=STRING (',' tools+=STRING)*
+    '}';
+
+type Tool = PythonTool | MCPServer;
+```
+
+Ejemplo:
+
+```
+mcpServer Tavily {
+    url "https://mcp.tavily.com/mcp/?tavilyApiKey={key}"
+    transport "streamable_http"
+    apiKeyName "TAVILY_API_KEY"
+    tools "tavily_search", "tavily_extract", "tavily_crawl"
+}
+
+agent Researcher {
+    ...
+    tools Tavily
+}
+```
+
+El agente referencia el server entero pero solo bindea las tools listadas,
+manteniendo la granularidad defendida en este ADR (rango 5–20 tools por
+agente, coste acotado) sin duplicar configuración.
+
+**Consecuencias de la revisión:**
+
+- La conexión (url, transport, apiKey) vive una sola vez — imposible
+  declarar incoherencias por construcción.
+- `description` y `params` desaparecen del DSL para tools MCP: el cliente
+  MCP los obtiene del server en runtime y el LLM los recibe a través del
+  `bind_tools`. El usuario decide *qué* tools usar, no *cómo* están
+  descritas.
+- El generador se simplifica: cada `mcpServer` es una entrada en
+  `MultiServerMCPClient`, sin lógica de agrupación ni coherencia cruzada.
+- Se pierde la simetría con `pythonTool` (una declaración ≠ una tool),
+  pero se gana coherencia semántica: un `mcpServer` refleja fielmente el
+  modelo del protocolo MCP (server expone catálogo, cliente elige
+  subset).
+- Los `.mad` con `mcpTool` granular deben migrarse a `mcpServer` con
+  lista de tools.
+
+Esta revisión no invalida el análisis de coste/precisión del ADR (que
+sigue siendo la motivación para la granularidad), solo corrige la forma
+sintáctica de expresarla.

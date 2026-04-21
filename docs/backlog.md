@@ -3,7 +3,6 @@
 | Prioridad | Tarea | Descripción |
 |---|---|---|
 | 🔴 Alta | Mecanismos de bifurcación | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. |
-| 🔴 Alta | Agentes usan herramientas | El generador de código aún no permite usar herramientas a los agentes. Se decidió no implementar solo herramientas Python en esta iteración porque la generación de herramientas MCP y Python difiere radicalmente, y hacerlo por separado obligaría a descartar código al unificarlas. Se abordará todo de una vez. |
 | 🔴 Alta | Restricciones de bien-formedness | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. |
 | 🔴 Alta | Refinar generación de código de estructura `Layered` | Revisar y mejorar la generación actual de la estructura de comunicación `Layered` para asegurar corrección, legibilidad y coherencia con el resto de estructuras pendientes. |
 | 🔴 Alta | Generación de código de estructura `Centralized` | Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
@@ -24,3 +23,4 @@
 |---|---|---|---|
 | 🔴 Alta | Configuración generada | El generador produce un `.env.template` y un `config.py`, pero las variables de API key del LLM están hardcodeadas para OpenAI tanto en el generador de configuración como en el de grafo. Debería variar según el modelo declarado en el metamodelo. | Generado el documento [Adr005](./adr/005-modelosPorProvider.md)|
 | 🟡 Media | Incluir selector de modelos | El generador asigna a todos los agentes el modelo `gpt-5-nano` por defecto, ignorando el atributo `model` del agente en el metamodelo (`gpt`, `claude`, `ollama`). | . |
+| 🔴 Alta | Agentes usan herramientas | El generador de código aún no permite usar herramientas a los agentes. Se decidió no implementar solo herramientas Python en esta iteración porque la generación de herramientas MCP y Python difiere radicalmente, y hacerlo por separado obligaría a descartar código al unificarlas. Se abordará todo de una vez. | Geberados los siguientes documentos [Adr006](./adr/006-eliminacionEndPointTool.md), [Adr007](./adr/007-toolNameEnMcpTool.md), [Adr008](./adr/008-failFastMcpToolLookup.md), [Adr009](./adr/009-baseModelComoToolYWhileLoop.md) |

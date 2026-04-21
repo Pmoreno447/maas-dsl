@@ -50,15 +50,6 @@ ${edges}
 # Compilar
 graph = builder.compile()
 
-# Ejecucion (Provisional, solo para probar en las primeras iteraciones del generador)
-entrada = """
-    # Rellenar
-"""
-
-result = graph.invoke({
-    "messages": [HumanMessage(content=entrada)]
-})
-
 def print_state(result: dict):
     print("💬 MENSAJES:")
     for i, msg in enumerate(result.get("messages", [])):
@@ -70,7 +61,19 @@ def print_state(result: dict):
         if key != "messages":
             print(f"  {key}: {value}")
 
-print_state(result)`.appendNewLineIfNotEmpty();
+# Ejecucion (Provisional, solo para probar en las primeras iteraciones del generador)
+import asyncio
+
+async def main():
+    entrada = """
+    # Rellenar
+"""
+    result = await graph.ainvoke({
+        "messages": [HumanMessage(content=entrada)]
+    })
+    print_state(result)
+
+asyncio.run(main())`.appendNewLineIfNotEmpty();
 
     if (!fs.existsSync(data.destination)) {
         fs.mkdirSync(data.destination, { recursive: true });
