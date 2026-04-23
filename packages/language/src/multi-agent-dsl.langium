@@ -26,8 +26,13 @@ Environment:
 GameRule:
     'gamerule' id = ID 'description' description = STRING;
 
+fragment Literal:
+    'literal' '{'
+        ('value' value+=STRING)+
+    '}';
+
 Attribute:
-    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING;
+    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING (Literal)?;
 
 type Message = Trim | Mix | None | Summarize;
 
