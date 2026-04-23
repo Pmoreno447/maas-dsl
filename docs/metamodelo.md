@@ -1,5 +1,5 @@
 ## Metamodelo
-* **Última Actualización:** 21/04/2026
+* **Última Actualización:** 23/04/2026
 
 ![Metamodelo](./media/Metamodel.webp)
 
@@ -14,10 +14,11 @@ Un sistema multiagente se describe mediante la siguiente estructura raíz (`LLMM
   tool ...
   agent ...
   <estructuras de comunicación> ...
+  <transiciones entre estructuras> ...
 }
 ```
 
-El metamodelo se organiza en cinco bloques principales: **Environment**, **Profile**, **Tool**, **Agent** y **CommunicationStructure**.
+El metamodelo se organiza en seis bloques principales: **Environment**, **Profile**, **Tool**, **Agent**, **CommunicationStructure** y **CommTransition**.
 
 ---
 
@@ -32,6 +33,8 @@ Reglas generales del sistema expresadas como descripciones textuales. _Pendiente
 #### `Attribute`
 
 Campos tipados (`int`, `string`, `boolean`) que conforman el estado compartido del sistema. Cada atributo tiene un nombre, un tipo y una descripción obligatoria. Los agentes pueden referenciar estos atributos para leer valores del estado o para actualizar el estado compartido a través de esquemas de salida estructurada.
+
+Opcionalmente, un atributo puede declarar un bloque `literal` con al menos un valor válido. Esto restringe el dominio del atributo a un conjunto cerrado de constantes, y sirve de base para la validación de condiciones de transición y para la generación de tipos enumerados en el código producido.
 
 #### `Message`
 
@@ -100,7 +103,7 @@ Herramienta que conecta con un servidor MCP (Model Context Protocol) remoto. Def
 
 ### `CommunicationStructure`
 
-Define cómo se organizan y comunican los agentes entre sí. Cualquier estructura puede encadenarse con otra mediante el atributo opcional `next`, lo que permite componer flujos de comunicación secuenciales. Existen cuatro estructuras:
+Define cómo se organizan y comunican los agentes dentro de un subgrafo. Cada estructura declara opcionalmente si es el punto de entrada del sistema (`start`) o el punto de salida (`end`). Las relaciones entre estructuras se definen de forma independiente mediante `CommTransition`. Existen cuatro estructuras:
 
 #### `Layered`
 
@@ -108,12 +111,28 @@ Organización jerárquica en capas. Cada `Layer` tiene un nombre, un nivel numé
 
 #### `Centralized`
 
-Un agente coordinador central (`coordinator`) gestiona la comunicación entre los demás agentes.
+Un agente coordinador central (`coordinator`) gestiona la comunicación con el resto de agentes del subgrafo.
 
 #### `SharedMessagePool`
 
-Todos los agentes comparten un pool de mensajes común, sin jerarquía ni coordinador.
+Todos los agentes del subgrafo comparten un pool de mensajes común, sin jerarquía ni coordinador.
 
 #### `Decentralized`
 
 Comunicación directa entre agentes sin coordinación central ni pool compartido.
+
+---
+
+### `CommTransition`
+
+Define una transición entre dos estructuras de comunicación. Se declara a nivel de sistema, fuera de las propias estructuras, lo que permite razonar sobre el grafo de comunicación de forma global.
+
+| Atributo    | Descripción                                                                                      |
+|-------------|--------------------------------------------------------------------------------------------------|
+| `from`      | Estructura de comunicación origen.                                                               |
+| `to`        | Estructura de comunicación destino.                                                              |
+| `condition` | Condición opcional. Si se especifica, la transición solo se activa cuando el atributo referenciado es igual al valor indicado. |
+
+#### `Condition`
+
+Una condición compara un `Attribute` del entorno con un valor literal mediante igualdad (`==`). Permite modelar bifurcaciones en las que el sistema navega a una estructura u otra en función del estado en tiempo de ejecución.

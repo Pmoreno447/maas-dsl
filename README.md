@@ -1,6 +1,6 @@
 # Multi-Agent DSL — MaaS DSL
 
-> **Estado actual:** Iteración 4 del metamodelo. El metamodelo se considera
+> **Estado actual:** Iteración 5 del metamodelo. El metamodelo se considera
 > estable a partir de esta versión; las futuras modificaciones se esperan
 > como extensiones no rupturistas. Consulta el historial completo de
 > iteraciones en [`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md).

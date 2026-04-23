@@ -23,7 +23,8 @@ se conservan en [`prototipos/`](./prototipos/).
 | v1      | Histórica  | Local (no versionada)         | Metamodelo base de Barriga et al. (2025)                  |
 | v2      | Histórica  | Local (no versionada)         | Propuesta basada en componentes de comportamiento         |
 | v3      | Histórica  | Repositorio (tag `v0.3`)      | Fusión de estructuras de comunicación con tools y estado  |
-| v4      | **Actual** | Rama `feature/metamodelo-v4`  | Integración estado–agente y personalización de nodos      |
+| v4      | Histórica | Repositorio (tag `v0.4`)  | Integración estado–agente y personalización de nodos      |
+| v5      | **Actual** | Repositorio (tag `v0.5`)  | Integración de bifurcaciones, literales y mejor sintaxis de las estructuras de comunicación     |
 
 > **Nota sobre v1 y v2:** las dos primeras iteraciones se desarrollaron en
 > local antes de versionar el proyecto en Git, por lo que no existen como
@@ -235,4 +236,18 @@ esta base.
 
 - Tag: `v0.4`
 
+---
 
+## v5 — Bifurcaciones, literales y separación de la intercomunicación entre estructuras
+
+**Objetivo.** Extender el metamodelo con soporte para flujos de control no lineales entre estructuras de comunicación, añadir la posibilidad de restringir atributos a un conjunto de valores válidos, y separar la definición de las transiciones entre estructuras de su propia declaración.
+
+**Cambios respecto a v4.**
+
+- **Bifurcaciones en el grafo de estructuras de comunicación.** Se introduce `CommTransition` como entidad de primer nivel, permitiendo que una estructura origine múltiples arcos de salida condicionados. Cada transición puede declarar opcionalmente una `Condition` basada en la igualdad de un atributo del estado con un valor literal. Esto permite modelar flujos donde el sistema navega a una estructura u otra en función del estado en tiempo de ejecución.
+- **Literales en atributos del entorno.** Los `Attribute` del entorno pueden incluir ahora un bloque `literal` opcional que enumera los valores válidos del atributo (mínimo uno). Este mecanismo sirve de base para la validación de condiciones de transición en el validador y para la generación de tipos enumerados en el código producido. Su integración en el generador de código queda pendiente para la siguiente iteración.
+- **Separación de la intercomunicación entre estructuras.** Las relaciones entre estructuras de comunicación ya no se definen como parte de cada estructura, sino como elementos independientes (`CommTransition`) declarados a nivel de sistema. Esto mejora la legibilidad del modelo y permite razonar sobre el grafo de comunicación de forma global sin necesidad de inspeccionar cada estructura individualmente.
+
+**Referencias en el repositorio.**
+
+- Tag: `v0.5`
