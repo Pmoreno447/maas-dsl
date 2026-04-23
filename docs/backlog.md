@@ -8,6 +8,8 @@
 | 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
 | 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith de tal forma que permita generar tanto una api como una herramienta para debuggearlo. |
 | 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.|
+| 🟡 Media | Añadir literales | Muy Bajo | Permitir que en los tipos ya existentes del estado se puedan definir literales es decir, los valores posibles|
+| 🟡 Media | Añadir listas | Muy Bajo | Permitir que se puedan incluir listas como atributos del estado|
 | 🟡 Media | Generación de código de estructura `SharedMessagePool` | Medio |Implementar en el generador la traducción de la estructura de comunicación `SharedMessagePool` (agentes que publican y consumen sobre un pool común de mensajes) al grafo de LangGraph. |
 | 🟡 Media | Generación de código de estructura `Decentralized` | Medio | Implementar en el generador la traducción de la estructura de comunicación `Decentralized` (comunicación directa entre agentes sin coordinador) al grafo de LangGraph. |
 | 🟡 Media | Summarize y Mix en el generador | Media | Actualmente se genera el nodo de resumen pero no se conecta al grafo. Su integración completa está bloqueada por la ausencia de bifurcaciones y por la ambigüedad de posición en grafos con múltiples estructuras. Detalle en `adr/002-summarize&mixReducer.md`. |
@@ -15,7 +17,6 @@
 | 🟡 Media | Segmentación de módulos por subgrafo | Medio | Refactorizar el generador para que los archivos `agents.py`, `prompt.py` y similares se dividan por estructura de comunicación cuando se mezclan varias. No afecta a la corrección del código generado, pero mejora su legibilidad. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md). |
 | 🟢 Baja | Generar código de mecanismo MIX | Alto |Permitir tanto que se guarden los x últimos mensajes como un resumen. Combinación de `trim` y `summarize`. |
 | 🟢 Baja | Flags en el CLI | Desconocido | Añadir opciones `--only` y `--skip` al comando `generate` para permitir activar o desactivar la generación de módulos individuales (state, prompts, agents, graph, tools). |
-
 | 🟢 Baja | Estado independiente por subgrafo | Muy alto | Extender el DSL y el generador para que cada subgrafo (estructura de comunicación) tenga su propio `TypedDict`, con proyección de campos compartidos hacia el estado padre. Solo abordar si aparece un caso de uso real que lo justifique. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md). |
 
 

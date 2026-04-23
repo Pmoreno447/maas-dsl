@@ -7,6 +7,7 @@ entry LLMMultiAgentSystem:
         tools+=(PythonTool | MCPServer )*
         agents+=Agent*
         communicationStructures+=(Layered | SharedMessagePool | Centralized | Decentralized)*
+        transitions+=CommTransition*
     '}';
 
 // Toda esta sección define la parte del entorno en que se encuentra el MAAS.
@@ -25,8 +26,13 @@ Environment:
 GameRule:
     'gamerule' id = ID 'description' description = STRING;
 
+fragment Literal:
+    'literal' '{'
+        ('value' value+=STRING)+
+    '}';
+
 Attribute:
-    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING;
+    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING (Literal)?;
 
 type Message = Trim | Mix | None | Summarize;
 
@@ -95,25 +101,46 @@ MCPServer:
 
 
 // A partir de aquí, se define la ultima parte del metamodelo, la cual indica como se comunican entre sí los distintos agentes
-// Se ha omitido CommunicationModel porque se ha descartado CommunicationParadigm 
+// Se ha omitido CommunicationModel porque se ha descartado CommunicationParadigm
 type CommunicationStructure = Layered | SharedMessagePool | Centralized | Decentralized;
 
-fragment NextCommStructure:
-    ('next' next=[CommunicationStructure])?;
+fragment CommStructureBase:
+    (isStart?='start')?
+    (isEnd?='end')?;
+
+fragment Agents:
+    'agents' agents+=Agent+;
+
+CommTransition:
+    'from' source=[CommunicationStructure] 'to' target=[CommunicationStructure] ('when' condition=Condition)?;
+
+Condition:
+    attribute=[Attribute] '==' value=STRING;
 
 Layered:
     'layered' name=ID '{'
+        CommStructureBase
         layers+=Layer+
-    '}' NextCommStructure;
+    '}';
 
 Centralized:
-    'centralized' name=ID 'coordinator' coordinator=[Agent] NextCommStructure;
+    'centralized' name=ID '{'
+        CommStructureBase
+        'coordinator' coordinator=[Agent]
+        Agents
+    '}';
 
 SharedMessagePool:
-    {infer SharedMessagePool} 'shared_message_pool' NextCommStructure;
+    'shared_message_pool' name=ID '{'
+        CommStructureBase
+        Agents
+    '}';
 
 Decentralized:
-    {infer Decentralized} 'decentralized' NextCommStructure;
+    'decentralized' name=ID '{'
+        CommStructureBase
+        Agents
+    '}';
 
 Layer:
     'layer' name=ID 'level' level=INT
