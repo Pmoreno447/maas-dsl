@@ -103,6 +103,9 @@ fragment CommStructureBase:
     (isStart?='start')?
     (isEnd?='end')?;
 
+fragment Agents:
+    'agents' agents+=Agent+;
+
 CommTransition:
     'from' source=[CommunicationStructure] 'to' target=[CommunicationStructure] ('when' condition=Condition)?;
 
@@ -119,16 +122,19 @@ Centralized:
     'centralized' name=ID '{'
         CommStructureBase
         'coordinator' coordinator=[Agent]
+        Agents
     '}';
 
 SharedMessagePool:
     'shared_message_pool' name=ID '{'
         CommStructureBase
+        Agents
     '}';
 
 Decentralized:
     'decentralized' name=ID '{'
         CommStructureBase
+        Agents
     '}';
 
 Layer:
