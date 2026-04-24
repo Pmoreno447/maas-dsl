@@ -16,12 +16,6 @@ builder.add_node("searcher", nodeSearcher)
 builder.add_node("formatter", nodeFormatter)
 builder.add_node("responder", nodeResponder)
 
-# Edges
-builder.add_edge(START, "searcher")
-builder.add_edge("searcher", "formatter")
-builder.add_edge("formatter", "responder")
-builder.add_edge("responder", END)
-
 # Compilar
 graph = builder.compile()
 
@@ -41,7 +35,7 @@ import asyncio
 
 async def main():
     entrada = """
-    Investiga sobre que es langgraph
+    # Rellenar
 """
     result = await graph.ainvoke({
         "messages": [HumanMessage(content=entrada)]

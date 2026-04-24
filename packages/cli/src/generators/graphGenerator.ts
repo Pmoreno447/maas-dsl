@@ -3,7 +3,7 @@ import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName, generateNodeName, collectApiKeyEnvVars } from '../util.js';
-import { generateEdges } from './edges/index.js'
+import { generateSubgraphs } from './edges/index.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateRegisterNode(agent: Agent): string {
@@ -16,10 +16,10 @@ export function generateGraph(model: LLMMultiAgentSystem, filePath: string, dest
     const data = extractDestinationAndName(filePath, destination);
     const generatedFilePath = `${path.join(data.destination, 'graph')}.py`;
 
+    generateSubgraphs(model, data.destination);
+
     const nodeNames = model.agents.map(a => generateNodeName(a)).join(', ');
     const addNodes = model.agents.map(a => generateRegisterNode(a)).join('\n');
-
-    const edges = generateEdges(model);
 
     const apiKeys = collectApiKeyEnvVars(model.agents).filter(k => k !== 'OLLAMA_BASE_URL');
     const apiKeyImports = apiKeys.length > 0
@@ -43,9 +43,6 @@ builder = StateGraph(State)
 
 # Nodos
 ${addNodes}
-
-# Edges
-${edges}
 
 # Compilar
 graph = builder.compile()

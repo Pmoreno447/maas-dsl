@@ -114,8 +114,11 @@ fragment Agents:
 CommTransition:
     'from' source=[CommunicationStructure] 'to' target=[CommunicationStructure] ('when' condition=Condition)?;
 
+ConditionType returns string:
+    'equal' | 'greather' | 'lower';
+
 Condition:
-    attribute=[Attribute] '==' value=STRING;
+    attribute=[Attribute] ConditionType value=STRING;
 
 Layered:
     'layered' name=ID '{'
