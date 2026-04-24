@@ -29,18 +29,14 @@ No puede haber distintos servidores mcp con misma url, osea el campo url debe se
 Debe existir exactamente una estructura de comunicación con `isStart = true` en el sistema. Tener ninguna impide determinar el punto de entrada del grafo de comunicación; tener más de una genera ambigüedad en el flujo.
 - **Detectada en:** Creación de la v0.5.0 del DSL.
 
-### R006 — Unicidad del punto de fin
-Debe existir exactamente una estructura de comunicación con `isEnd = true` en el sistema. Tener ninguna impide determinar la condición de parada del grafo; tener más de una genera ambigüedad en la terminación.
-- **Detectada en:** Creación de la v0.5.0 del DSL.
-
-### R007 — Sin arcos duplicados con condición desde el mismo origen
+### R006 — Sin arcos duplicados con condición desde el mismo origen
 Dado un nodo fuente, no pueden existir dos transiciones con condición que apunten al mismo nodo destino. Dos arcos con la misma fuente y el mismo destino son semánticamente equivalentes y producen comportamiento no determinista.
 - **Detectada en:** Creación de la v0.5.0 del DSL.
 
-### R008 — Las transiciones únicas no pueden tener condición
+### R007 — Las transiciones únicas no pueden tener condición
 Si desde un nodo fuente existe una única transición de salida, dicha transición no puede llevar condición. Una condición en un arco único carece de sentido porque no hay ningún otro arco alternativo al que derivar el flujo cuando la condición no se cumpla.
 - **Detectada en:** Creación de la v0.5.0 del DSL.
 
-### R009 — Compatibilidad de tipos en la condición de transición
+### R008 — Compatibilidad de tipos en la condición de transición
 El tipo del valor literal empleado en una condición de transición debe ser compatible con el tipo declarado del atributo referenciado. Comparar un atributo `int` con un valor `string`, o viceversa, produce una condición inevaluable en tiempo de ejecución.
 - **Detectada en:** Creación de la v0.5.0 del DSL.
