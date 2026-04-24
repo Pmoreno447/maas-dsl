@@ -2,12 +2,9 @@
 ## Tareas pendientes
 | Prioridad | Tarea | Esfuerzo | Descripción |
 |---|---|---|---|
-| 🔴 Alta | Mecanismos de bifurcación | Alto | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. |
 | 🔴 Alta | Restricciones de bien-formedness | Medio | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. | 
-| 🔴 Alta | Refinar generación de código de estructura `Layered` | Medio | Revisar y mejorar la generación actual de la estructura de comunicación `Layered` para asegurar corrección, legibilidad y coherencia con el resto de estructuras pendientes. |
 | 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
 | 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith de tal forma que permita generar tanto una api como una herramienta para debuggearlo. |
-| 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.|
 | 🟡 Media | Añadir literales | Muy Bajo | Permitir que en los tipos ya existentes del estado se puedan definir literales es decir, los valores posibles|
 | 🟡 Media | Añadir listas | Muy Bajo | Permitir que se puedan incluir listas como atributos del estado|
 | 🟡 Media | Generación de código de estructura `SharedMessagePool` | Medio |Implementar en el generador la traducción de la estructura de comunicación `SharedMessagePool` (agentes que publican y consumen sobre un pool común de mensajes) al grafo de LangGraph. |
@@ -27,3 +24,6 @@
 | 🔴 Alta | Configuración generada | Bajo | El generador produce un `.env.template` y un `config.py`, pero las variables de API key del LLM están hardcodeadas para OpenAI tanto en el generador de configuración como en el de grafo. Debería variar según el modelo declarado en el metamodelo. | Generado el documento [Adr005](./adr/005-modelosPorProvider.md)|
 | 🟡 Media | Incluir selector de modelos | Medio | El generador asigna a todos los agentes el modelo `gpt-5-nano` por defecto, ignorando el atributo `model` del agente en el metamodelo (`gpt`, `claude`, `ollama`). | . |
 | 🔴 Alta | Agentes usan herramientas | Alto | El generador de código aún no permite usar herramientas a los agentes. Se decidió no implementar solo herramientas Python en esta iteración porque la generación de herramientas MCP y Python difiere radicalmente, y hacerlo por separado obligaría a descartar código al unificarlas. Se abordará todo de una vez. | Geberados los siguientes documentos [Adr006](./adr/006-eliminacionEndPointTool.md), [Adr007](./adr/007-toolNameEnMcpTool.md), [Adr008](./adr/008-failFastMcpToolLookup.md), [Adr009](./adr/009-baseModelComoToolYWhileLoop.md) |
+| 🔴 Alta | Mecanismos de bifurcación | Alto | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. | . |
+| 🔴 Alta | Refinar generación de código de estructura `Layered` | Medio | Revisar y mejorar la generación actual de la estructura de comunicación `Layered` para asegurar corrección, legibilidad y coherencia con el resto de estructuras pendientes. | . |
+| 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.| . |
