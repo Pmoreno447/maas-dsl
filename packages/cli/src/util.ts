@@ -120,5 +120,5 @@ export function collectMcpApiKeyEnvVars(tools: Tool[]): string[] {
 }
 
 export function subgraphDefinitionName(comm: CommunicationStructure): string{
-    return 'build_' + comm.name + '()';
+    return 'build_' + comm.name;
 }

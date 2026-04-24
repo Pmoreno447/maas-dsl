@@ -40,3 +40,10 @@ Si desde un nodo fuente existe una única transición de salida, dicha transici�
 ### R008 — Compatibilidad de tipos en la condición de transición
 El tipo del valor literal empleado en una condición de transición debe ser compatible con el tipo declarado del atributo referenciado. Comparar un atributo `int` con un valor `string`, o viceversa, produce una condición inevaluable en tiempo de ejecución.
 - **Detectada en:** Creación de la v0.5.0 del DSL.
+
+### R09 - Compatibilidad de transiciones.
+Se puede tener una transición sin condición junto a otras transiciones con condiciones, pero tan solo una. La idea de esto es permitir un camino de else en los router, es decir, si no se cumple ni A ni B puedes ir a C. Pero si se usan varias transiciones sin condición, la entrada será invalida.
+- **Detectada en:** Creación de la v0.5.1 del generador de código.
+
+### R10 - Compatibilidad de tipos en las condiciones
+Si es una comparación booleana, el valor de "**valor**" solo puede ser True o False.

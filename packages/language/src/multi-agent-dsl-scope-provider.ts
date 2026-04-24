@@ -6,7 +6,7 @@ export class MultiAgentDslScopeProvider extends DefaultScopeProvider {
     override getScope(context: ReferenceInfo): Scope {
         // Para las referencias de Agent.stateContext y Agent.stateUpdate a Attribute,
         // buscamos los atributos dentro del Environment del sistema.
-        if (context.property === 'stateContext' || context.property === 'stateUpdate') {
+        if (context.property === 'stateContext' || context.property === 'stateUpdate' || context.property === 'attribute') {
             const system = AstUtils.getContainerOfType(context.container, isLLMMultiAgentSystem) as LLMMultiAgentSystem | undefined;
             if (system?.envirement) {
                 const descriptions = system.envirement.attributes.map(attr =>

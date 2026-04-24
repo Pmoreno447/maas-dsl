@@ -47,7 +47,7 @@ export function generateLayeredSubgraph(layered: Layered, destination: string): 
     edges.push(`builder.add_edge("${layers[layers.length - 1].agent.ref!.name.toLowerCase()}", END)`);
     const addEdges = edges.join('\n    ');
 
-    const definitionSubgraph = subgraphDefinitionName(layered);
+    const definitionSubgraph = subgraphDefinitionName(layered) + '()';
 
     const fileNode = expandToNode`
 from langgraph.graph import StateGraph, START, END

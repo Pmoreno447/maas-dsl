@@ -105,20 +105,26 @@ MCPServer:
 type CommunicationStructure = Layered | SharedMessagePool | Centralized | Decentralized;
 
 fragment CommStructureBase:
-    (isStart?='start')?
-    (isEnd?='end')?;
+    (isStart?='start')?;
 
 fragment Agents:
     'agents' agents+=Agent+;
 
 CommTransition:
-    'from' source=[CommunicationStructure] 'to' target=[CommunicationStructure] ('when' condition=Condition)?;
+    'from' source=[CommunicationStructure] 'to' (target=[CommunicationStructure] | isEnd?='END') ('when' condition=Condition)?;
 
 ConditionType returns string:
     'equal' | 'greather' | 'lower';
 
 Condition:
-    attribute=[Attribute] ConditionType value=STRING;
+    attribute=[Attribute] operator=ConditionType value=ConditionLiteral;
+
+ConditionLiteral:
+    BoolLiteral | IntLiteral | StringLiteral;
+
+BoolLiteral:   {infer BoolLiteral}   value=('True' | 'False');
+IntLiteral:    {infer IntLiteral}    value=INT;
+StringLiteral: {infer StringLiteral} value=STRING;
 
 Layered:
     'layered' name=ID '{'
