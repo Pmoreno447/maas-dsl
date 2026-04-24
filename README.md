@@ -15,7 +15,7 @@ El proyecto sigue una convención de versiones con tres niveles (`vX.Y.Z`):
 
 
 - **X** — versión de release. Permanece en `0` durante el desarrollo del TFG. Pasará a `1` cuando el sistema se considere completo y publicable.
-- **Y** — iteración del metamodelo. Incrementa cuando se introduce una nueva versión del metamodelo con cambios estructurales. El historial completo de iteraciones está en [`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md).
+- **Y** —  iteración del metamodelo. Incrementa cuando se introduce una nueva versión del metamodelo con cambios estructurales. El historial completo de iteraciones está en [`docs/evolucionMetamodelo.md`](./docs/evolucionMetamodelo.md).
 - **Z** — iteración del generador de código sobre el metamodelo actual. Incrementa con cada nuevo módulo generado o mejora significativa del generador. El historial está en [`docs/evolucionGenerador.md`](./docs/evolucionGenerador.md).
 
 ### Ejemplos
