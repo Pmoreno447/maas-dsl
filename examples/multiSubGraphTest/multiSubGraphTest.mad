@@ -1,0 +1,96 @@
+{
+    environment McpTools {
+        attribute bool type boolean description "Es solo un ejemplo, este grafo no tiene ningun sentido al ser ejecutado, solo son pruebas para ver la generacion de mezcla de subgrafos"
+        attribute x type int description "Es solo un ejemplo, este grafo no tiene ningun sentido al ser ejecutado, solo son pruebas para ver la generacion de mezcla de subgrafos"
+        attribute y type string description "Es solo un ejemplo, este grafo no tiene ningun sentido al ser ejecutado, solo son pruebas para ver la generacion de mezcla de subgrafos"
+
+        none
+    }
+
+    profile Searcher description
+    "
+Eres un agente de búsqueda. Usa las herramientas disponibles para buscar
+información relevante sobre lo que te pidan y responde con lo que encuentres.
+    "
+
+    profile Formatter description
+    "
+Eres un agente de formateo. Usa la herramienta disponible para formatear
+el texto recibido y devuelve el resultado formateado.
+    "
+
+    profile Responder description
+    "
+Eres un agente de respuesta final. A partir del historial de mensajes,
+sintetiza una respuesta clara y concisa.
+    "
+
+    mcpServer Tavily {
+        url "https://mcp.tavily.com/mcp/?tavilyApiKey={key}"
+        transport "streamable_http"
+        apiKeyName "TAVILY_API_KEY"
+        tools "tavily_search", "tavily_extract"
+    }
+
+    pythonTool prueba description "Herramienta de prueba local"
+        modulePath "prueba"
+
+    agent Searcher {
+        provider openai
+        model "gpt-5-nano"
+        profile Searcher
+        tools Tavily
+    }
+
+    agent Formatter {
+        provider openai
+        model "gpt-5-nano"
+        profile Formatter
+        tools prueba
+    }
+
+    agent Responder {
+        provider openai
+        model "gpt-5-nano"
+        profile Responder
+    }
+
+    layered Pipeline1 {
+        start
+        layer ResponderLayer level 3 agent Responder
+        layer FormatterLayer level 2 next ResponderLayer agent Formatter
+        layer SearcherLayer level 1 next FormatterLayer agent Searcher
+    }
+
+    layered Pipeline2 {
+        layer ResponderLayer level 3 agent Responder
+        layer FormatterLayer level 2 next ResponderLayer agent Formatter
+        layer SearcherLayer level 1 next FormatterLayer agent Searcher
+    }
+
+    layered Pipeline3 {
+        layer ResponderLayer level 3 agent Responder
+        layer FormatterLayer level 2 next ResponderLayer agent Formatter
+        layer SearcherLayer level 1 next FormatterLayer agent Searcher
+    }
+
+    layered Pipeline4 {
+        layer ResponderLayer level 3 agent Responder
+        layer FormatterLayer level 2 next ResponderLayer agent Formatter
+        layer SearcherLayer level 1 next FormatterLayer agent Searcher
+    }
+
+    from Pipeline1 to Pipeline2 when bool equal True
+    from Pipeline1 to Pipeline3 when bool equal False
+    from Pipeline1 to END
+
+    from Pipeline2 to Pipeline3
+    
+    from Pipeline3 to Pipeline4 when x greather 12
+    from Pipeline3 to Pipeline3 when x lower 5
+    from Pipeline3 to Pipeline2 when x equal 1
+
+    from Pipeline4 to END when y equal "Test"
+    from Pipeline4 to Pipeline1
+
+}

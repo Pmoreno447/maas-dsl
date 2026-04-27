@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { URI } from 'langium';
-import type { Agent, Tool } from 'multi-agent-dsl-language';
+import type { Agent, CommunicationStructure, Tool } from 'multi-agent-dsl-language';
 import { isKnownProvider, isMCPServer } from 'multi-agent-dsl-language';
 
 
@@ -117,4 +117,8 @@ export function collectMcpApiKeyEnvVars(tools: Tool[]): string[] {
         result.push(tool.apiKeyName);
     }
     return result;
+}
+
+export function subgraphDefinitionName(comm: CommunicationStructure): string{
+    return 'build_' + comm.name;
 }

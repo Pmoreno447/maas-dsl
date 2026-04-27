@@ -1,14 +1,13 @@
 import type { LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 import { isLayered, isCentralized, isSharedMessagePool, isDecentralized } from 'multi-agent-dsl-language';
-import { generateLayeredEdges } from './layered.js';
-import { generateCentralizedEdges } from './centralized.js';
+import { generateLayeredSubgraph } from './layered.js';
+import { generateCentralizedSubgraph } from './centralized.js';
 
-export function generateEdges(model: LLMMultiAgentSystem): string {
-    return model.communicationStructures.map(structure => {
-        if (isLayered(structure))           return generateLayeredEdges(structure);
-        if (isCentralized(structure))       return generateCentralizedEdges();
-        if (isSharedMessagePool(structure)) return '# SharedMessagePool: pendiente';
-        if (isDecentralized(structure))     return '# Decentralized: pendiente';
-        return '';
-    }).join('\n');
+export function generateSubgraphs(model: LLMMultiAgentSystem, destination: string): void {
+    for (const structure of model.communicationStructures) {
+        if (isLayered(structure))           { generateLayeredSubgraph(structure, destination); continue; }
+        if (isCentralized(structure))       { generateCentralizedSubgraph(structure, destination); continue; }
+        if (isSharedMessagePool(structure)) { continue; }
+        if (isDecentralized(structure))     { continue; }
+    }
 }
