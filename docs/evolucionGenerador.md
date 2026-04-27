@@ -10,10 +10,10 @@ El generador se desarrolla de forma incremental, siguiendo el mismo ciclo iterat
 |---|---|---|---|
 | Prompts | `prompt.py` | ✅ Completo | v4 |
 | Configuración | `.env.template` + `config.py` | ✅ Completo | v4 |
-| Estado | `state.py` | 🟡 Parcial | v4 |
+| Estado | `state.py` | ✅ Completo | v4 |
 | Agentes | `agents.py` | ✅ Completo | v4 |
 | Grafo | `graph.py` | 🟡 Parcial | v4 |
-| Tools | `tools/` | ⬜ Pendiente | v4 |
+| Tools | `tools/` | ✅ Completo | v4 |
 
 ---
 
@@ -126,6 +126,57 @@ Con esta iteración el generador ya es capaz de producir **agentes reales** que 
 
 ---
 
+## Iteración 3 — Bifurcaciones, estructura `Centralized`, mezcla de subgrafos y primer ejemplo real
+
+Tercera iteración del generador sobre el metamodelo v4. Tras la iteración 2, que cerró agentes y herramientas, esta iteración se centra en el módulo `graph.py`: introducir bifurcaciones condicionales en el DSL, completar la estructura `Centralized` y permitir la mezcla de varias estructuras de comunicación en un mismo sistema. Como cierre, se valida todo el conjunto sobre un caso de uso realista de atención al cliente, lo que motivó dos mejoras adicionales sobre el generador.
+
+### Módulos generados
+
+**`graph.py` — bifurcaciones**
+El generador soporta ahora transiciones condicionales entre estructuras de comunicación. Las comparaciones disponibles dependen del tipo del atributo del estado: `int` y `string` admiten igualdad, mayor y menor (en `string` el orden lexicográfico es de utilidad limitada, pero se mantiene por uniformidad sintáctica del DSL); `bool` compara contra `true` o `false`. Estas transiciones se materializan como `add_conditional_edges` con un router por estructura origen, que enruta hacia el destino correspondiente según el valor del atributo evaluado.
+
+**`graph.py` — un subgrafo por estructura de comunicación**
+Se tomó la decisión de que cada estructura de comunicación genere su propio subgrafo, con `START` y `END` propios, en lugar de aplanarlo todo sobre el grafo principal. Esto desacopla la generación de cada estructura de su posición dentro del grafo general: el generador de bifurcaciones solo ve nodos opacos que se conectan entre sí, y el generador de cada estructura no necesita saber dónde encaja. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md).
+
+**`graph.py` — estructura `Layered`**
+Sin complejidad adicional respecto a la iteración 1, más allá de adaptarla al nuevo esquema de subgrafo independiente.
+
+**`graph.py` — estructura `Centralized`**
+El reto principal fue cómo modelar el coordinador en el metamodelo. La intención inicial era reutilizar la clase `Agent` mediante una referencia que marcase a uno como coordinador, pero `Agent` lleva consigo `stateContext`, `stateUpdate`, `tools` y otros atributos que no aplican al nodo orquestador (que se genera de forma distinta), aunque sí necesitamos del coordinador su prompt, el modelo y la temperatura. Se evaluaron tres alternativas:
+
+- Reutilizar `Agent` y que el generador detecte el rol y descarte los atributos no aplicables. Descartada por opacidad: el modelo declararía información que el generador ignora silenciosamente.
+- Reutilizar `Agent` con restricciones OCL que prohíban los atributos sobrantes y dejar el contexto del coordinador en manos del usuario. Descartada por la sobrecarga de añadir más OCL y porque delegar el contexto al usuario abre la puerta a coordinadores poco efectivos.
+- Introducir una clase `Coordinator` independiente. La opción más limpia conceptualmente sería que `Agent` y `Coordinator` heredasen de una entidad común, pero hacerlo en este punto rompía partes del generador. Se optó por una clase nueva sin herencia: introduce algo de acoplamiento, pero a cambio el generador puede inyectar automáticamente como contexto del coordinador todos los atributos del estado que los agentes del cluster escriben, sin que el usuario tenga que declararlo.
+
+**`graph.py` — mezcla de estructuras de comunicación**
+La integración de varios subgrafos en el grafo principal se implementó sin incidencias. Es en este punto donde el generador emite los routers que materializan las bifurcaciones del DSL. La interfaz entre el generador del grafo principal y los generadores de cada subgrafo es una función `build_<nombre>()` que devuelve el subgrafo compilado, de modo que añadir nuevas estructuras de comunicación en el futuro no requiere tocar el generador principal.
+
+### Decisiones y limitaciones de esta iteración
+
+- **Subgrafo por estructura en vez de grafo aplanado:** desacopla la generación de bifurcaciones de la de cada estructura y mejora la legibilidad del código generado al hacer explícita la jerarquía. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md).
+- **`Coordinator` como clase independiente:** se prefirió frente a la herencia para no romper el generador existente. El acoplamiento introducido es tolerable y, a cambio, el generador puede asignar el contexto del coordinador automáticamente a partir de los `stateUpdate` de los agentes del cluster.
+- **Preámbulo de enrutamiento generado:** el código emitido para el coordinador era semánticamente correcto pero poco efectivo en la práctica (el modelo entraba en bucles delegando varias veces sobre el mismo problema). El generador añade ahora un preámbulo fijo al prompt del coordinador con la lista de agentes disponibles, las reglas de enrutamiento y la indicación de que los campos del estado que recibe han sido escritos por los especialistas. El prompt del usuario se concatena tras este preámbulo, manteniéndose responsable únicamente de la lógica de dominio.
+- **Soporte para LangSmith:** durante la depuración del coordinador se utilizó LangSmith Studio para inspeccionar las trazas en ejecución. Aunque su soporte estaba previsto en una iteración posterior del backlog, se adelantó por conveniencia: el generador emite ahora las variables de entorno (`LANGCHAIN_TRACING_V2`, `LANGCHAIN_API_KEY`, `LANGCHAIN_PROJECT`) y el correspondiente bloque en `.env.template`.
+
+### Validación de la iteración
+
+Para validar el generador se construyó un nuevo ejemplo realista, [`examples/customerServiceMas/customerServiceMas.mad`](../examples/customerServiceMas/customerServiceMas.mad), que modela un sistema de atención al cliente con la siguiente lógica:
+
+1. Validación de la entrada: un agente comprueba si el mensaje es una solicitud real y si el ID de pedido existe (usando una `pythonTool`).
+2. Si la entrada no es válida, el grafo termina con una respuesta al cliente; si es válida, otro agente extrae los datos relevantes del pedido.
+3. Una estructura `Centralized` delega la resolución del problema en uno de cuatro especialistas (envío, pago, producto, generalista) y, una vez resuelto, un último agente compone la respuesta final al cliente.
+
+Este modelo cubre todas las construcciones introducidas en la iteración: bifurcaciones (transiciones condicionales sobre `isValid`), mezcla de estructuras de comunicación (`Layered` + `Centralized`) y agentes con herramientas dentro de la estructura centralizada. El código generado se ejecutó satisfactoriamente sobre los tres casos de prueba previstos: mensaje no serio, mensaje válido con ID inexistente y mensaje válido con ID correcto.
+
+### Cierre de la iteración
+
+Con esta iteración el generador cubre el módulo `graph.py` de forma completa para las estructuras `Layered` y `Centralized`, incluyendo bifurcaciones y la mezcla de varias estructuras dentro de un mismo sistema. Las próximas iteraciones se centrarán en las estructuras `SharedMessagePool` y `Decentralized`, así como en las mejoras pendientes sobre la calidad del código generado.
+
+**Referencias en el repositorio.**
+
+- Tag: `v0.5.1`
+
+---
 ## Modelo de ejecución del código generado
 
 ```bash
@@ -151,3 +202,4 @@ python graph.py
 ```
 
 > ⚠️ Antes de ejecutar, asegurarse de que `OPENAI_API_KEY` está definida en el `.env`. Y que se ha definido una entrada en el graph.py, hay ejemplos de entrada y salida junto al código generado.
+

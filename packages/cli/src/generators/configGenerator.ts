@@ -3,7 +3,7 @@ import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName, collectApiKeyEnvVars, collectMcpApiKeyEnvVars } from '../util.js';
-import { isTrim, isMix, isSummarize, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
+import { isTrim, isMix, isSummarize, isCentralized, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
 
 // Defaults razonables para variables de entorno que no son secretos sino
 // endpoints (ej. Ollama corre en localhost por defecto).
@@ -43,9 +43,26 @@ export function generateEnvFiles(model: LLMMultiAgentSystem, filePath: string, d
     const messageEnvVars = resolveMessageEnvVars(model.envirement.messages);
     const messageConfigVars = resolveMessageConfigVars(model.envirement.messages);
 
+    const coordinatorKeys = model.communicationStructures
+        .filter(isCentralized)
+        .map(c => c.coordinator.provider)
+        .map((p): string | null => {
+            switch (p) {
+                case 'openai':    return 'OPENAI_API_KEY';
+                case 'anthropic': return 'ANTHROPIC_API_KEY';
+                case 'google':    return 'GOOGLE_API_KEY';
+                case 'ollama':    return 'OLLAMA_BASE_URL';
+                default:          return null;
+            }
+        })
+        .filter((k): k is string => k !== null);
+
     const apiKeys = [
-        ...collectApiKeyEnvVars(model.agents),
-        ...collectMcpApiKeyEnvVars(model.tools)
+        ...new Set([
+            ...collectApiKeyEnvVars(model.agents),
+            ...collectMcpApiKeyEnvVars(model.tools),
+            ...coordinatorKeys,
+        ])
     ];
     const envApiKeys = apiKeys.map(k => `${k}=`).join('\n');
     const configApiKeys = apiKeys.map(k => {
@@ -58,6 +75,7 @@ export function generateEnvFiles(model: LLMMultiAgentSystem, filePath: string, d
     // Genera .env.template
     const envNode = expandToNode`
 # API Keys
+LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com
 LANGSMITH_API_KEY=
 LANGSMITH_PROJECT=
 ${envApiKeys}
@@ -74,6 +92,7 @@ import os
 
 load_dotenv()
 
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT")
 ${configApiKeys}

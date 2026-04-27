@@ -3,8 +3,6 @@
 | Prioridad | Tarea | Esfuerzo | Descripción |
 |---|---|---|---|
 | 🔴 Alta | Restricciones de bien-formedness | Medio | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. | 
-| 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
-| 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith de tal forma que permita generar tanto una api como una herramienta para debuggearlo. |
 | 🟡 Media | Añadir literales | Muy Bajo | Permitir que en los tipos ya existentes del estado se puedan definir literales es decir, los valores posibles|
 | 🟡 Media | Añadir listas | Muy Bajo | Permitir que se puedan incluir listas como atributos del estado|
 | 🟡 Media | Generación de código de estructura `SharedMessagePool` | Medio |Implementar en el generador la traducción de la estructura de comunicación `SharedMessagePool` (agentes que publican y consumen sobre un pool común de mensajes) al grafo de LangGraph. |
@@ -27,3 +25,5 @@
 | 🔴 Alta | Mecanismos de bifurcación | Alto | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. | . |
 | 🔴 Alta | Refinar generación de código de estructura `Layered` | Medio | Revisar y mejorar la generación actual de la estructura de comunicación `Layered` para asegurar corrección, legibilidad y coherencia con el resto de estructuras pendientes. | . |
 | 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.| . |
+| 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
+| 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith (plataforma usada para debugear el grafo) |

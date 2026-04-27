@@ -1,0 +1,110 @@
+{
+    environment ContentProcessing {
+        attribute content type string description "Contenido a procesar"
+        attribute summary type string description "Resumen del contenido generado"
+        attribute score type int description "Puntuación de calidad del 0 al 10"
+        attribute approved type boolean description "True si el contenido supera el umbral de calidad"
+        attribute report type string description "Informe final formateado listo para publicar"
+
+        none
+    }
+
+    profile Coordinator description
+    "
+Eres un coordinador de tareas. Analiza el mensaje recibido y decide qué agente debe actuar a continuación:
+    - Analyzer: si hay contenido nuevo que analizar
+    - Summarizer: si el contenido ya fue analizado y necesita un resumen
+    - FINISH: si el resumen ya está generado
+
+Responde únicamente con el nombre del siguiente agente o FINISH.
+    "
+
+    profile Analyzer description
+    "
+Eres un agente analizador de contenido. Analiza el texto recibido, extrae información relevante
+y asigna una puntuación de calidad del 0 al 10 según la profundidad y coherencia del contenido.
+    "
+
+    profile Summarizer description
+    "
+Eres un agente resumidor. A partir del contenido analizado, genera un resumen conciso,
+estructurado y fiel al texto original.
+    "
+
+    profile Formatter description
+    "
+Eres un agente de formateo. Toma el resumen generado y lo formatea de manera profesional,
+añadiendo secciones claras y una presentación adecuada para un informe.
+    "
+
+    profile Validator description
+    "
+Eres un agente validador. Revisa el informe formateado y determina si cumple los estándares
+de calidad mínimos (puntuación mayor o igual a 6). Actualiza el campo approved en consecuencia.
+    "
+
+    profile Publisher description
+    "
+Eres un agente publicador. Toma el informe validado y genera la versión final del documento
+lista para ser entregada, añadiendo metadatos y firma de revisión.
+    "
+
+    agent Formatter {
+        provider openai
+        model "gpt-4o-mini"
+        profile Formatter
+        stateContext summary score
+        stateUpdate report
+    }
+
+    agent Validator {
+        provider openai
+        model "gpt-4o-mini"
+        profile Validator
+        stateContext report score
+        stateUpdate approved
+    }
+
+    agent Publisher {
+        provider openai
+        model "gpt-4o-mini"
+        profile Publisher
+        stateContext report approved
+    }
+
+    centralized ContentHub {
+        start
+        coordinator Coord {
+            provider openai
+            model "gpt-4o"
+            profile Coordinator
+        }
+        agents
+            agent Analyzer {
+                provider openai
+                model "gpt-4o-mini"
+                profile Analyzer
+                stateUpdate content score
+            }
+            agent Summarizer {
+                provider openai
+                model "gpt-4o-mini"
+                profile Summarizer
+                stateContext content
+                stateUpdate summary
+            }
+    }
+
+    layered PublishPipeline {
+        layer PublisherLayer level 3 agent Publisher
+        layer ValidatorLayer level 2 next PublisherLayer agent Validator
+        layer FormatterLayer level 1 next ValidatorLayer agent Formatter
+    }
+
+    from ContentHub to PublishPipeline
+    from ContentHub to END
+
+    from PublishPipeline to ContentHub when score lower 6
+    from PublishPipeline to END when approved equal True
+
+}

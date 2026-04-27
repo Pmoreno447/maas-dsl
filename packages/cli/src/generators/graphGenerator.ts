@@ -113,14 +113,14 @@ export function generateGraph(model: LLMMultiAgentSystem, filePath: string, dest
     const apiKeyEnvAssignments = apiKeys.map(k => `os.environ["${k}"] = ${k}`).join('\n');
 
     const fileNode = expandToNode`
+import os
+${apiKeyImports}
+${apiKeyEnvAssignments}
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, START, END
 from state import State
-import os
 ${subgraphImports}
-${apiKeyImports}
 
-${apiKeyEnvAssignments}
 
 
 # Construcción del grafo

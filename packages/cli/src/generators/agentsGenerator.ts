@@ -70,7 +70,7 @@ function generateNode(agent: Agent): string {
 
     const contextFields = agent.stateContext && agent.stateContext.length > 0
         ? `+ [HumanMessage(content=f"""
-${agent.stateContext.map(ref => `            ${ref.ref!.name}: {state["${ref.ref!.name}"]}`).join('\n')}
+${agent.stateContext.map(ref => `            ${ref.ref!.name}: {state.get("${ref.ref!.name}", "No registrado aún")}`).join('\n')}
         """)]`
         : '';
 

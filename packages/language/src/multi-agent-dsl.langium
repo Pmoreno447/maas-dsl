@@ -108,7 +108,7 @@ fragment CommStructureBase:
     (isStart?='start')?;
 
 fragment Agents:
-    'agents' agents+=Agent+;
+    'agents' agents+=[Agent]+;
 
 CommTransition:
     'from' source=[CommunicationStructure] 'to' (target=[CommunicationStructure] | isEnd?='END') ('when' condition=Condition)?;
@@ -132,10 +132,21 @@ Layered:
         layers+=Layer+
     '}';
 
+Coordinator:
+    'coordinator' name=ID '{'
+        //Necesario
+        'provider' provider=ProviderType
+        'model' model=STRING
+        'profile' profile=[Profile]
+
+        // Opcional
+        ('temperature' temperature = INT)?
+    '}';
+
 Centralized:
     'centralized' name=ID '{'
         CommStructureBase
-        'coordinator' coordinator=[Agent]
+        coordinator=Coordinator
         Agents
     '}';
 
