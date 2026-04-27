@@ -81,39 +81,37 @@ El tono del correo debe ser cálido, profesional y motivador. No reveles la punt
     "
     
     // Herramientas
-    pythonTool notifyByEmail description "Herramienta para notificar por correo electronico" 
-        params {email type string}
-        modulePath "Example"
+    pythonTool notifyByEmail modulePath "Example"
 
     // Agentes
     agent Extractor {
         provider openai
         model "gpt-5-nano"
         profile Extractor
-        stateUpdate candidateName candidateEmail yearsExperience skills educationLevel language
+        stateUpdate candidateName, candidateEmail, yearsExperience, skills, educationLevel, language
     }
 
     agent Evaluator {
         provider openai
         model "gpt-5-nano"
         profile Evaluator
-        stateContext candidateName candidateEmail yearsExperience skills educationLevel language
-        stateUpdate score meetRequirement strengths weaknesses
+        stateContext candidateName, candidateEmail, yearsExperience, skills, educationLevel, language
+        stateUpdate score, meetRequirement, strengths, weaknesses
     }
 
     agent ReportGenerator {
         provider openai
         model "gpt-5-nano"
         profile ReportGenerator
-        stateContext candidateName candidateEmail yearsExperience skills educationLevel language score meetRequirement strengths weaknesses
-        stateUpdate reportText recommendation
+        stateContext candidateName, candidateEmail, yearsExperience, skills, educationLevel, language, score, meetRequirement, strengths, weaknesses
+        stateUpdate reportText, recommendation
     }
 
     agent Notifier {
         provider openai
         model "gpt-5-nano"
         profile Notifier
-        stateContext candidateName candidateEmail score reportText recommendation
+        stateContext candidateName, candidateEmail, score, reportText, recommendation
         tools notifyByEmail
     }
 

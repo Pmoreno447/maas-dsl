@@ -28,8 +28,7 @@ sintetiza una respuesta clara y concisa.
         tools "tavily_search", "tavily_extract"
     }
 
-    pythonTool prueba description "Herramienta de prueba local"
-        modulePath "prueba"
+    pythonTool prueba modulePath "prueba"
 
     agent Searcher {
         provider openai

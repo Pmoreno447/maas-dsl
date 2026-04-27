@@ -53,7 +53,7 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
         provider openai
         model "gpt-4o-mini"
         profile Formatter
-        stateContext summary score
+        stateContext summary, score
         stateUpdate report
     }
 
@@ -61,7 +61,7 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
         provider openai
         model "gpt-4o-mini"
         profile Validator
-        stateContext report score
+        stateContext report, score
         stateUpdate approved
     }
 
@@ -69,7 +69,22 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
         provider openai
         model "gpt-4o-mini"
         profile Publisher
-        stateContext report approved
+        stateContext report, approved
+    }
+
+    agent Analyzer {
+        provider openai
+        model "gpt-4o-mini"
+        profile Analyzer
+        stateUpdate content, score
+    }
+
+    agent Summarizer {
+        provider openai
+        model "gpt-4o-mini"
+        profile Summarizer
+        stateContext content
+        stateUpdate summary
     }
 
     centralized ContentHub {
@@ -79,20 +94,7 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
             model "gpt-4o"
             profile Coordinator
         }
-        agents
-            agent Analyzer {
-                provider openai
-                model "gpt-4o-mini"
-                profile Analyzer
-                stateUpdate content score
-            }
-            agent Summarizer {
-                provider openai
-                model "gpt-4o-mini"
-                profile Summarizer
-                stateContext content
-                stateUpdate summary
-            }
+        agents Analyzer, Summarizer
     }
 
     layered PublishPipeline {

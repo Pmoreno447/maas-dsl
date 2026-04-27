@@ -33,7 +33,7 @@ function generateModel(agent: Agent): string {
 
     const params: string[] = [
         `model="${toModel(agent)}"`,
-        `temperature=${agent.temperature ?? 0}`,
+        `temperature=${agent.temperature ?? 0.0}`,
     ];
     if (agent.provider === 'ollama') params.push(`base_url=OLLAMA_BASE_URL`);
     if (agent.maxToken)   params.push(`max_tokens=${agent.maxToken}`);
@@ -65,7 +65,7 @@ function generateNode(agent: Agent): string {
     const nodeName = generateNodeName(agent);
     const modelName = `model${agentPascal}`;
     const profileName = agent.profile.ref!.name.toUpperCase();
-    const description = agent.description?.[0] ?? '';
+    const description = agent.description ?? '';
     const className = agentPascal + 'Output';
 
     const contextFields = agent.stateContext && agent.stateContext.length > 0

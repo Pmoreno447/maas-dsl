@@ -28,7 +28,7 @@ function generateRouterClass(memberNames: string[]): string {
 function generateCoordinatorModel(coordinator: Coordinator): string {
     const params: string[] = [
         `model="${coordinator.provider}:${coordinator.model}"`,
-        `temperature=${coordinator.temperature ?? 0}`,
+        `temperature=${coordinator.temperature ?? 0.0}`,
     ];
     if (coordinator.provider === 'ollama') params.push(`base_url=OLLAMA_BASE_URL`);
     return `modelCoordinator = init_chat_model(${params.join(', ')})`;

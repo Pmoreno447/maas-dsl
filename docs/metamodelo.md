@@ -89,7 +89,7 @@ Define un agente individual dentro del sistema. Referencia un `Profile` (su prom
 
 ### `Tool`
 
-Define herramientas que los agentes pueden utilizar para interactuar con sistemas externos. Todas las herramientas comparten una base común (`ToolBase`): nombre, descripción y parámetros opcionales tipados (`Param`). Existen tres tipos:
+Define herramientas que los agentes pueden utilizar para interactuar con sistemas externos. Todas las herramientas comparten una base común (`ToolBase`): nombre y parámetros opcionales tipados (`Param`). Existen dos tipos:
 
 #### `PythonTool`
 

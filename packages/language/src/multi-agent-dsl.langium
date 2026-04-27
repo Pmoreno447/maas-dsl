@@ -63,12 +63,12 @@ Agent:
         'profile' profile=[Profile]
 
         //Recomendable
-        ('description' description+=STRING)?
-        ('stateContext' stateContext+=[Attribute]+)?
-        ('stateUpdate' stateUpdate+=[Attribute]+)?
+        ('description' description=STRING)?
+        ('stateContext' stateContext+=[Attribute] (',' stateContext+=[Attribute])*)?
+        ('stateUpdate' stateUpdate+=[Attribute] (',' stateUpdate+=[Attribute])*)?
 
         // Opcional
-        ('temperature' temperature = INT)?
+        ('temperature' temperature = FLOAT)?
         ('maxToken' maxToken = INT)?
         ('timeOut' timeOut = INT)?
         ('maxRetries' maxRetries = INT)?
@@ -81,12 +81,8 @@ Profile:
 type Tool = PythonTool | MCPServer ;
 
 fragment ToolBase:
-    name=ID 
-    'description' description=STRING
-    ('params' '{' param+=Param* '}')?;
+    name=ID;
 
-Param:
-    name=ID 'type' type=AttributeType;
 
 PythonTool:
     'pythonTool' ToolBase 'modulePath' modulePath=STRING;
@@ -108,7 +104,7 @@ fragment CommStructureBase:
     (isStart?='start')?;
 
 fragment Agents:
-    'agents' agents+=[Agent]+;
+    'agents' agents+=[Agent] (',' agents+=[Agent])*;
 
 CommTransition:
     'from' source=[CommunicationStructure] 'to' (target=[CommunicationStructure] | isEnd?='END') ('when' condition=Condition)?;
@@ -140,7 +136,7 @@ Coordinator:
         'profile' profile=[Profile]
 
         // Opcional
-        ('temperature' temperature = INT)?
+        ('temperature' temperature = FLOAT)?
     '}';
 
 Centralized:
@@ -169,6 +165,7 @@ Layer:
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;
+terminal FLOAT returns number: /[0-9]+\.[0-9]+/;
 terminal INT returns number: /[0-9]+/;
 terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
 

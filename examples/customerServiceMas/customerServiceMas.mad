@@ -154,25 +154,25 @@ REGLAS ESTRICTAS:
     "
 
     // Herramientas del validador 
-    pythonTool orderChecker description "Determina si el pedido existe en el sistema o no." modulePath "validator"
+    pythonTool orderChecker modulePath "validator"
 
     // Herramienta del extractor de informacion
-    pythonTool getInfoOrder description "Devuelve toda la información existente sobre un pedido en el sistema." modulePath "Order"
+    pythonTool getInfoOrder modulePath "Order"
 
     // Herramientas del ayudante de envío
-    pythonTool reopenShipmentCase description "Dado el trackingNumber reabre el caso con la transportista" modulePath "Order"
-    pythonTool requestDuplicateShipment description "Dado el orderId solicita el reenvío del pedido" modulePath "Order"
+    pythonTool reopenShipmentCase modulePath "Order"
+    pythonTool requestDuplicateShipment modulePath "Order"
 
     // Herramientas del ayudante de pago
-    pythonTool requestRefund description "Dado el orderId y paymentAmount tramita la devolucion" modulePath "Order"
-    pythonTool applyDiscount description "Dado el orderId aplica un descuento como compensación" modulePath "Order"
+    pythonTool requestRefund modulePath "Order"
+    pythonTool applyDiscount modulePath "Order"
 
     // Herramientas del ayudante de producto
-    pythonTool requestReplacement description "Dado el orderId gestiona el envio de un remplazo" modulePath "Order"
-    pythonTool requestReturn description "Dado el orderId inicia la devolucion de un producto y genera una etiqueta de devolución" modulePath "Order"
+    pythonTool requestReplacement modulePath "Order"
+    pythonTool requestReturn modulePath "Order"
 
     // Herramientas del ayudante general
-    pythonTool getDeliveryEstimate description "Dado el orderId determina el tiempo que le queda al pedido para llegar" modulePath "Order"
+    pythonTool getDeliveryEstimate modulePath "Order"
 
     // Agentes
     agent Validator {
@@ -189,7 +189,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile infoExtractor
         description "Agente encargado de rellenar el estado con la información del pedido"
-        stateUpdate orderId issueDescription preferredSolution orderStatus productID productBatch trackingNumber paymentAmount paymentStatus
+        stateUpdate orderId, issueDescription, preferredSolution, orderStatus, productID, productBatch, trackingNumber, paymentAmount, paymentStatus
         tools getInfoOrder
     }
 
@@ -198,7 +198,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile answerWriter
         description "Agente encargado de responder al usuario"
-        stateContext isValid decision
+        stateContext isValid, decision
     }
 
     
@@ -207,7 +207,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile shippingHelper
         description "Especialista en problemas de envios."
-        stateContext orderId issueDescription preferredSolution orderStatus productID productBatch trackingNumber paymentAmount paymentStatus
+        stateContext orderId, issueDescription, preferredSolution, orderStatus, productID, productBatch, trackingNumber, paymentAmount, paymentStatus
         stateUpdate decision
         tools reopenShipmentCase, requestDuplicateShipment
     }
@@ -217,7 +217,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile paymentHelper
         description "Especialista en problemas de pago."
-        stateContext orderId issueDescription preferredSolution orderStatus productID productBatch trackingNumber paymentAmount paymentStatus
+        stateContext orderId, issueDescription, preferredSolution, orderStatus, productID, productBatch, trackingNumber, paymentAmount, paymentStatus
         stateUpdate decision
         tools requestRefund, applyDiscount
     }
@@ -227,7 +227,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile productHelper
         description "Especialista en problemas de envios."
-        stateContext orderId issueDescription preferredSolution orderStatus productID productBatch trackingNumber paymentAmount paymentStatus
+        stateContext orderId, issueDescription, preferredSolution, orderStatus, productID, productBatch, trackingNumber, paymentAmount, paymentStatus
         stateUpdate decision
         tools requestReplacement, requestReturn, getDeliveryEstimate
     }  
@@ -237,7 +237,7 @@ REGLAS ESTRICTAS:
         model "gpt-5-nano"
         profile generalHelper
         description "Especialista en problemas generales."
-        stateContext orderId issueDescription preferredSolution orderStatus productID productBatch trackingNumber paymentAmount paymentStatus
+        stateContext orderId, issueDescription, preferredSolution, orderStatus, productID, productBatch, trackingNumber, paymentAmount, paymentStatus
         stateUpdate decision
         tools getDeliveryEstimate
     }  
@@ -261,7 +261,7 @@ REGLAS ESTRICTAS:
             model "gpt-5-nano"
             profile problemOrchestrator
         }
-        agents shippingHelper paymentHelper productHelper generalHelper
+        agents shippingHelper, paymentHelper, productHelper, generalHelper
     }
 
     from ValidationGraph to answerWriter when isValid equal False

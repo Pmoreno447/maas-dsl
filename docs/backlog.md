@@ -3,6 +3,7 @@
 | Prioridad | Tarea | Esfuerzo | Descripción |
 |---|---|---|---|
 | 🔴 Alta | Restricciones de bien-formedness | Medio | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. | 
+| 🔴 Alta | Estado persistente | Baja | Evolucionar el DSl y generador de código para que se genere código que permita guardar estados de forma persistente en una base de datos | 
 | 🟡 Media | Añadir literales | Muy Bajo | Permitir que en los tipos ya existentes del estado se puedan definir literales es decir, los valores posibles|
 | 🟡 Media | Añadir listas | Muy Bajo | Permitir que se puedan incluir listas como atributos del estado|
 | 🟡 Media | Generación de código de estructura `SharedMessagePool` | Medio |Implementar en el generador la traducción de la estructura de comunicación `SharedMessagePool` (agentes que publican y consumen sobre un pool común de mensajes) al grafo de LangGraph. |

@@ -9,12 +9,13 @@ Los niveles de las capas dentro de un `Layered` deben ser únicos.
 - **Detectada en:** iteración 1
 - **Prototipo:** research-assistant
 
-### R002 — Summarize y Mix solo en grafos cíclicos
-Si la estructura de comunicación es lineal, no se puede usar `Summarize` ni `Mix`.
+### R002 — Summarize y Mix solo en grafos cíclicos *(descartada)*
+~~Si la estructura de comunicación es lineal, no se puede usar `Summarize` ni `Mix`.~~
 - **Detectada en:** iteración 4
 - **Prototipo:** cvReviewer
 - **ADR relacionado:** adr/002-summarize&mixReducer.md
 - **Pendiente relacionado:** Mecanismos de bifurcación
+- **Motivo del descarte:** Los grafos pueden ejecutarse múltiples veces con estado persistente (checkpointer de LangGraph). En ese contexto, los mensajes se acumulan entre ejecuciones aunque la estructura interna sea lineal, por lo que `Summarize` y `Mix` son igual de pertinentes en grafos lineales.
 
 ### R003 - Estructuras de comunicación unidas.
 Todas las estructuras de comunciacion deben estar entrelazadas de tal forma que no haya ninguna estructura de comunicación a la que sea imposible de acceder. Algoritmo de grafos.
@@ -45,5 +46,6 @@ El tipo del valor literal empleado en una condición de transición debe ser com
 Se puede tener una transición sin condición junto a otras transiciones con condiciones, pero tan solo una. La idea de esto es permitir un camino de else en los router, es decir, si no se cumple ni A ni B puedes ir a C. Pero si se usan varias transiciones sin condición, la entrada será invalida.
 - **Detectada en:** Creación de la v0.5.1 del generador de código.
 
-### R10 - Compatibilidad de tipos en las condiciones
-Si es una comparación booleana, el valor de "**valor**" solo puede ser True o False.
+### R10 - Temperatura de los agentes
+La temperatura del agente debe estar entre 0.0 y 1.0
+- **Detectada en:** minor fixes de la sintáxis de la gramática del .langium

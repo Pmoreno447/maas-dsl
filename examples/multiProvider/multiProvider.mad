@@ -45,7 +45,7 @@ el texto final pulido, manteniendo el tono y estructura originales.
         provider anthropic
         model "claude-sonnet-4-6"
         profile Writer
-        stateContext topic research
+        stateContext topic, research
         stateUpdate draft
     }
 
@@ -61,7 +61,7 @@ el texto final pulido, manteniendo el tono y estructura originales.
         provider ollama
         model "llama3.1"
         profile Editor
-        stateContext draft critique
+        stateContext draft, critique
         stateUpdate finalText
     }
 
