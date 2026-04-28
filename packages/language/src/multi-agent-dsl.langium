@@ -16,11 +16,26 @@ entry LLMMultiAgentSystem:
 AttributeType returns string:
     'int' | 'string' | 'boolean';
 
+type PersistenceValue = NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver;
+
+NonePersistence:
+    {infer NonePersistence} 'None';
+
+InMemorySaver:
+    {infer InMemorySaver} 'inMemorySave';
+
+PostgreSaver:
+    {infer PostgreSaver} 'Postgre';
+
+MongoDBSaver:
+    {infer MongoDBSaver} 'MongoDB';
+
 Environment:
     'environment' name = ID '{'
         gamerules+=GameRule*
         attributes+=Attribute*
         messages=(Trim | Mix | None | Summarize)
+        'persistence' persistence=(NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver)
     '}';
 
 GameRule:

@@ -2,8 +2,9 @@ import type { LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName, collectApiKeyEnvVars, collectMcpApiKeyEnvVars } from '../util.js';
+import { extractDestinationAndName, collectApiKeyEnvVars, collectMcpApiKeyEnvVars, isDb } from '../util.js';
 import { isTrim, isMix, isSummarize, isCentralized, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
+import { type NonePersistence, type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
 
 // Defaults razonables para variables de entorno que no son secretos sino
 // endpoints (ej. Ollama corre en localhost por defecto).
@@ -36,12 +37,35 @@ MAX_TOKENS = int(os.getenv("MAX_TOKENS", 1000))`;
     return '';
 }
 
+function resolvePersistenceEnvVar(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): string{
+    if(!isDb(persistenceType)){
+        return ''
+    }
+    else{
+        return `# Configuración de la base de datos
+DB_URI=`
+    }
+}
+
+function resolvePersistenceConfigVar(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): string{
+    if(!isDb(persistenceType)){
+        return ''
+    }
+    else{
+        return `# Configuración de la base de datos
+DB_URI=os.getenv("DB_URI")`
+    }
+}
+
 // ─── Generator ────────────────────────────────────────────────────────────────
 export function generateEnvFiles(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): void {
     const data = extractDestinationAndName(filePath, destination);
 
     const messageEnvVars = resolveMessageEnvVars(model.envirement.messages);
     const messageConfigVars = resolveMessageConfigVars(model.envirement.messages);
+
+    const persistenceEnvVar = resolvePersistenceEnvVar(model.envirement.persistence);
+    const persistenceConfigVar = resolvePersistenceConfigVar(model.envirement.persistence);
 
     const coordinatorKeys = model.communicationStructures
         .filter(isCentralized)
@@ -82,6 +106,9 @@ ${envApiKeys}
 
 # Configuración de mensajes
 ${messageEnvVars}
+
+${persistenceEnvVar}
+
 `.appendNewLineIfNotEmpty();
 
     // Genera config.py
@@ -99,6 +126,8 @@ ${configApiKeys}
 
 # Configuración de mensajes
 ${messageConfigVars}
+
+${persistenceConfigVar}
 `.appendNewLineIfNotEmpty();
 
     if (!fs.existsSync(data.destination)) {

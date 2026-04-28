@@ -1,10 +1,12 @@
 import type { LLMMultiAgentSystem, CommTransition, ConditionLiteral } from 'multi-agent-dsl-language';
-import { isBoolLiteral, isIntLiteral, isStringLiteral } from 'multi-agent-dsl-language';
+import { isBoolLiteral, isInMemorySaver, isIntLiteral, isStringLiteral } from 'multi-agent-dsl-language';
 import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName, collectApiKeyEnvVars, subgraphDefinitionName } from '../util.js';
+import { extractDestinationAndName, collectApiKeyEnvVars, subgraphDefinitionName} from '../util.js';
 import { generateSubgraphs } from './edges/index.js';
+import { isPostgreSaver, isMongoDBSaver, type NonePersistence, type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateConditionValue(literal: ConditionLiteral): string {
@@ -20,6 +22,30 @@ function generateOperator(op: string): string {
         case 'greather': return '>';
         case 'lower':    return '<';
         default:         return '==';
+    }
+}
+
+function generatePersistenceCode(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): { importDb: string, compileBlock: string } {
+    if (isPostgreSaver(persistenceType)) {
+        return {
+            importDb:   'from config import DB_URI\nfrom langgraph.checkpoint.postgres import PostgresSaver',
+            compileBlock: 'with PostgresSaver.from_conn_string(DB_URI) as checkpointer:\n    graph = builder.compile(checkpointer=checkpointer)'
+        };
+    } else if (isMongoDBSaver(persistenceType)) {
+        return {
+            importDb:   'from config import DB_URI\nfrom langgraph.checkpoint.mongodb import MongoDBSaver',
+            compileBlock: 'with MongoDBSaver.from_conn_string(DB_URI) as checkpointer:\n    graph = builder.compile(checkpointer=checkpointer)'
+        };
+    } else if (isInMemorySaver(persistenceType)) {
+        return {
+            importDb:   'from langgraph.checkpoint.memory import InMemorySaver',
+            compileBlock: 'checkpointer = InMemorySaver()\ngraph = builder.compile(checkpointer=checkpointer)'
+        };
+    } else {
+        return {
+            importDb:   '',
+            compileBlock: 'graph = builder.compile()'
+        };
     }
 }
 
@@ -111,6 +137,7 @@ export function generateGraph(model: LLMMultiAgentSystem, filePath: string, dest
     const apiKeys = collectApiKeyEnvVars(model.agents).filter(k => k !== 'OLLAMA_BASE_URL');
     const apiKeyImports = apiKeys.length > 0 ? `from config import ${apiKeys.join(', ')}` : '';
     const apiKeyEnvAssignments = apiKeys.map(k => `os.environ["${k}"] = ${k}`).join('\n');
+    const { importDb, compileBlock } = generatePersistenceCode(model.envirement.persistence);
 
     const fileNode = expandToNode`
 import os
@@ -120,6 +147,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, START, END
 from state import State
 ${subgraphImports}
+${importDb}
 
 
 
@@ -141,7 +169,7 @@ ${routers}
 ${edges}
 
 # Compilar
-graph = builder.compile()
+${compileBlock}
 
 def print_state(result: dict):
     print("💬 MENSAJES:")
