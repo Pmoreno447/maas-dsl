@@ -6,6 +6,7 @@ import { generateGraph } from './generators/graphGenerator.js'
 import { mcpClientGenerator } from './generators/mcpClientGenerator.js'
 import { generateLangGraphJson } from './generators/jsonGenerator.js'
 import { generateCheckpointer } from './generators/checkpointerGenerator.js'
+import { generateRequirements } from './generators/requirementsGenerator.js'
 import type { LLMMultiAgentSystem } from 'multi-agent-dsl-language';
 
 export function generate(model: LLMMultiAgentSystem, filePath: string, destination: string | undefined): void {
@@ -17,4 +18,5 @@ export function generate(model: LLMMultiAgentSystem, filePath: string, destinati
     generateGraph(model, filePath, destination);
     generateLangGraphJson(model, filePath, destination);
     generateCheckpointer(model, filePath, destination);
+    generateRequirements(model, filePath, destination);
 }

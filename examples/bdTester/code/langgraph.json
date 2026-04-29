@@ -5,8 +5,5 @@
   "graphs": {
     "agent": "./graph.py:graph"
   },
-  "checkpointer": {
-    "path": "./checkpointer.py:generate_checkpointer"
-  },
   "env": ".env"
 }

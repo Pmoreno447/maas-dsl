@@ -2,7 +2,7 @@
 {
     environment bdTester {
         none
-        persistence Postgre
+        persistence inMemorySave
     }
 
     profile agente1 description

@@ -12,5 +12,4 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Configuración de mensajes
 
 
-# Configuración de la base de datos
-DB_URI=os.getenv("DB_URI")
+
