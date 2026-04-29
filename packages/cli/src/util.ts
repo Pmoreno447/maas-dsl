@@ -5,7 +5,7 @@ import * as fs from 'node:fs';
 import { URI } from 'langium';
 import type { Agent, CommunicationStructure, Tool } from 'multi-agent-dsl-language';
 import { isKnownProvider, isMCPServer } from 'multi-agent-dsl-language';
-import { isNonePersistence, isInMemorySaver, type NonePersistence, type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
+import { isInMemorySaver, type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
 
 
 export async function extractDocument(fileName: string, services: LangiumCoreServices): Promise<LangiumDocument> {
@@ -124,8 +124,8 @@ export function subgraphDefinitionName(comm: CommunicationStructure): string{
     return 'build_' + comm.name;
 }
 
-export function isDb(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): boolean{
-    if(isNonePersistence(persistenceType) || isInMemorySaver(persistenceType)){
+export function isDb(persistenceType: InMemorySaver | PostgreSaver | MongoDBSaver): boolean{
+    if(isInMemorySaver(persistenceType)){
         return false;
     }
     else {

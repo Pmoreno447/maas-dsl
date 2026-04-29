@@ -7,6 +7,7 @@
         attribute finalText type string description "Texto final revisado"
 
         none
+        persistence None
     }
 
     profile Researcher description

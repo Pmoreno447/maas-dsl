@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName, collectApiKeyEnvVars, collectMcpApiKeyEnvVars, isDb } from '../util.js';
 import { isTrim, isMix, isSummarize, isCentralized, type Trim, type Mix, type None, type Summarize } from 'multi-agent-dsl-language';
-import { type NonePersistence, type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
+import { type InMemorySaver, type PostgreSaver, type MongoDBSaver } from 'multi-agent-dsl-language';
 
 // Defaults razonables para variables de entorno que no son secretos sino
 // endpoints (ej. Ollama corre en localhost por defecto).
@@ -37,7 +37,7 @@ MAX_TOKENS = int(os.getenv("MAX_TOKENS", 1000))`;
     return '';
 }
 
-function resolvePersistenceEnvVar(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): string{
+function resolvePersistenceEnvVar(persistenceType: InMemorySaver | PostgreSaver | MongoDBSaver): string{
     if(!isDb(persistenceType)){
         return ''
     }
@@ -47,7 +47,7 @@ DB_URI=`
     }
 }
 
-function resolvePersistenceConfigVar(persistenceType: NonePersistence | InMemorySaver | PostgreSaver | MongoDBSaver): string{
+function resolvePersistenceConfigVar(persistenceType: InMemorySaver | PostgreSaver | MongoDBSaver): string{
     if(!isDb(persistenceType)){
         return ''
     }

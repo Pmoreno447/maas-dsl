@@ -1,6 +1,7 @@
 {
     environment McpTools {
         none
+        persistence None
     }
 
     profile Searcher description

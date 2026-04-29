@@ -5,6 +5,7 @@
         attribute y type string description "Es solo un ejemplo, este grafo no tiene ningun sentido al ser ejecutado, solo son pruebas para ver la generacion de mezcla de subgrafos"
 
         none
+        persistence Postgre
     }
 
     profile Searcher description

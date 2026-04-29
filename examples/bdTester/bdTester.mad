@@ -1,0 +1,37 @@
+    
+{
+    environment bdTester {
+        none
+        persistence Postgre
+    }
+
+    profile agente1 description
+    "
+    Escribe una función en python con lo que te pidan. 
+    "
+
+    profile agente2 description
+    "
+    Analiza el código y detecta si algo está mal, si es el caso corrigelo.
+    "
+
+    agent Agent1 {
+        provider openai
+        model "gpt-5-nano"
+        profile agente1
+    }
+
+    agent Agent2 {
+        provider openai
+        model "gpt-5-nano"
+        profile agente2
+    }
+
+    layered example {
+        start
+        layer first level 1 next second agent Agent1
+        layer second level 2 agent Agent2
+    }
+
+    from example to END
+}

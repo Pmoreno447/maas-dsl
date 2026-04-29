@@ -8,12 +8,14 @@ El generador se desarrolla de forma incremental, siguiendo el mismo ciclo iterat
 
 | Módulo | Archivo generado | Estado | Versión metamodelo |
 |---|---|---|---|
-| Prompts | `prompt.py` | ✅ Completo | v4 |
-| Configuración | `.env.template` + `config.py` | ✅ Completo | v4 |
-| Estado | `state.py` | ✅ Completo | v4 |
-| Agentes | `agents.py` | ✅ Completo | v4 |
-| Grafo | `graph.py` | 🟡 Parcial | v4 |
-| Tools | `tools/` | ✅ Completo | v4 |
+| Prompts | `prompt.py` | ✅ Completo | v5 |
+| Configuración | `.env.template` + `config.py` | ✅ Completo | v5 |
+| Estado | `state.py` | ✅ Completo | v5 |
+| Agentes | `agents.py` | ✅ Completo | v5 |
+| Grafo | `graph.py` | 🟡 Parcial | v5 |
+| Tools | `tools/` | ✅ Completo | v5 |
+| Tools | `langgraph.json` | ✅ Completo | v5 |
+| Tools | `checkpointer.py` | ✅ Completo | v5 |
 
 ---
 
@@ -172,9 +174,42 @@ Este modelo cubre todas las construcciones introducidas en la iteración: bifurc
 
 Con esta iteración el generador cubre el módulo `graph.py` de forma completa para las estructuras `Layered` y `Centralized`, incluyendo bifurcaciones y la mezcla de varias estructuras dentro de un mismo sistema. Las próximas iteraciones se centrarán en las estructuras `SharedMessagePool` y `Decentralized`, así como en las mejoras pendientes sobre la calidad del código generado.
 
-**Referencias en el repositorio.**
 
-- Tag: `v0.5.1`
+## Iteración 4 — Persistencia, integración con LangSmith Studio y `requirements.txt`
+
+> Iteración en curso. Se documenta el trabajo ya completado sobre persistencia y LangSmith Studio; queda pendiente la generación automática del `requirements.txt`.
+
+Cuarta iteración del generador sobre el metamodelo v5. El objetivo es que el sistema multi-agente generado persista su estado entre ejecuciones y pueda inspeccionarse desde herramientas externas. El metamodelo expone tres opciones de persistencia (`InMemorySaver`, `PostgreSaver`, `MongoDBSaver`); `none` se deja sin tratamiento específico porque equivale al comportamiento por defecto de `InMemorySaver`.
+
+### Módulos generados
+
+**`checkpointer.py` (nuevo)**
+Módulo dedicado que expone una función `generate_checkpointer()` envuelta como *context manager*. Su contenido depende del subtipo de persistencia: `InMemorySaver` (síncrono, sin conexión externa), `AsyncPostgresSaver` (asíncrono, con `AsyncConnection` de `psycopg` y llamada a `setup()` para crear las tablas) o `MongoDBSaver`. La conexión se parametriza vía `DB_URI`.
+
+**`langgraph.json` (nuevo `jsonGenerator.ts`)**
+Antes generado a mano. En esta iteración se añade `jsonGenerator.ts`, que emite el `langgraph.json` con el campo `checkpointer` apuntando a `./checkpointer.py:generate_checkpointer` y la entrada del grafo. Esto es lo que habilita además la integración con **LangSmith Studio**: arrancar `langgraph dev` con este JSON ya correcto permite inspeccionar trazas y *threads* sin configuración adicional.
+
+**`.env.template` + `config.py`**
+Cuando la persistencia requiere conexión externa se añade el bloque `# Configuración de la base de datos` con la variable `DB_URI`, y se expone como constante en `config.py`. Para `InMemorySaver` no se inyecta nada.
+
+### Decisiones y limitaciones de esta iteración
+
+- **Checkpointer en archivo aparte, no en `builder.compile()`:** la primera implementación pasaba el checkpointer directamente a `builder.compile(checkpointer=...)`. Esto compila sin error y `setup()` crea las tablas, pero `langgraph dev` (runtime `langgraph_runtime_inmem`) descarta cualquier checkpointer pasado por código y nunca escribe en la base de datos — fallo silencioso, documentado como bug abierto en LangGraph (#5790). La solución adoptada es declararlo en `checkpointer.py` y referenciarlo desde `langgraph.json`, que el runtime sí respeta.
+
+- **`AsyncPostgresSaver` con `AsyncConnection` explícita:** `PostgresSaver.from_conn_string()` devuelve un `_GeneratorContextManager`, no el saver, por lo que llamar a `.setup()` directamente lanza `AttributeError`. El generador instancia el saver con una `AsyncConnection` ya abierta y delega el cierre al `finally`.
+
+- **Validación caja-negra contra el contenedor de DB:** dado que el fallo principal era silencioso, la validación se hizo inspeccionando colecciones/tablas con `mongosh` y `psql`. Comandos en [`docs/comandosCheckpointDB.md`](./comandosCheckpointDB.md).
+
+- **Convención de DB por saver:** `AsyncPostgresSaver` usa la DB de `DB_URI`; `MongoDBSaver` ignora la DB de la URI y crea siempre `checkpointing_db` con colecciones `checkpoints` y `checkpoint_writes`. Esta diferencia indujo inicialmente a pensar que MongoDB no persistía cuando sí lo hacía.
+
+### Validación parcial de la iteración
+
+Se introduce el modelo [`examples/bdTester/bdTester.mad`](../examples/bdTester/bdTester.mad), minimalista a propósito (dos agentes en `Layered`), variando únicamente el atributo `persistence` entre las tres opciones soportadas. Para cada caso se ejecuta el grafo contra los contenedores Docker de Postgres y Mongo y se comprueba el incremento de checkpoints con consultas directas al contenedor.
+
+### Pendiente para cerrar la iteración
+
+- Generación automática del `requirements.txt` a partir de los imports del código generado.
+- Decidir si los ajustes hechos sobre `EnvironmentDef.persistence` justifican una entrada en `evolucionMetamodelo.md`.
 
 ---
 ## Modelo de ejecución del código generado

@@ -3,8 +3,6 @@
 | Prioridad | Tarea | Esfuerzo | Descripción |
 |---|---|---|---|
 | 🔴 Alta | Restricciones de bien-formedness | Medio | Redactar e implementar en el validator todas las restricciones OCL identificadas. Catálogo provisional en `restricciones.md`. | 
-| 🔴 Alta | Estado persistente | Baja | Evolucionar el DSl y generador de código para que se genere código que permita guardar estados de forma persistente en una base de datos | 
-| 🔴 Alta | Soporte para Langsmith Studio| Baja | Gracias a un json, permite desplegar un servidor local para desarrollo, te da acceso a una API del grafo, un GUI para testear el grafo y gracias a este también podemos generar un docker de nuestro grafo con una API basada en FastAPI| 
 | 🟡 Media | Añadir literales | Muy Bajo | Permitir que en los tipos ya existentes del estado se puedan definir literales es decir, los valores posibles|
 | 🟡 Media | Añadir listas | Muy Bajo | Permitir que se puedan incluir listas como atributos del estado|
 | 🟡 Media | Generación de código de estructura `SharedMessagePool` | Medio |Implementar en el generador la traducción de la estructura de comunicación `SharedMessagePool` (agentes que publican y consumen sobre un pool común de mensajes) al grafo de LangGraph. |
@@ -31,3 +29,5 @@
 | 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.| . |
 | 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
 | 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith (plataforma usada para debugear el grafo) |
+| 🔴 Alta | Estado persistente | Baja | Evolucionar el DSl y generador de código para que se genere código que permita guardar estados de forma persistente en una base de datos | 
+| 🔴 Alta | Soporte para Langsmith Studio| Baja | Gracias a un json, permite desplegar un servidor local para desarrollo, te da acceso a una API del grafo, un GUI para testear el grafo y gracias a este también podemos generar un docker de nuestro grafo con una API basada en FastAPI| 
