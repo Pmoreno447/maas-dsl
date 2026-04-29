@@ -7,7 +7,7 @@
         attribute report type string description "Informe final formateado listo para publicar"
 
         none
-        persistence None
+        persistence inMemorySave
     }
 
     profile Coordinator description

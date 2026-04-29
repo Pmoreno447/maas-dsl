@@ -80,3 +80,19 @@ docker exec -it langgraph-postgres psql -U postgres -d langgraph
 
 - Si cambias de grafo y reusas la misma DB, **no pasa nada** mientras los `thread_id` sean distintos: el esquema es genérico (blobs serializados).
 - Si reusas un mismo `thread_id` con un `State` incompatible al anterior, ese thread fallará al reanudar — solución: nuevo `thread_id` o `dropDatabase()`.
+
+
+
+----
+
+
+para probar la api, el straem output sin crear previamente los hilos
+
+```json
+{
+  "assistant_id": "agent",
+  "input": { "messages": [{ "role": "user", "content": "suma dos numeros" }] },
+  "stream_mode": ["custom", "messages"],
+  "stream_subgraphs": true
+}
+```

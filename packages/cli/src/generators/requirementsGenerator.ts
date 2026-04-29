@@ -14,6 +14,7 @@ const BASE_REQUIREMENTS = [
     'pydantic',
     'typing-extensions',
     'langsmith',
+    'langgraph-cli[inmem]',
 ];
 
 function providerRequirement(provider: string): string | null {

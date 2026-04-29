@@ -17,14 +17,16 @@
 
     agent Agent1 {
         provider openai
-        model "gpt-5-nano"
+        model "gpt-4o-mini"
         profile agente1
+        statusMessage " 🖥️ programando funcion..."
     }
 
     agent Agent2 {
         provider openai
-        model "gpt-5-nano"
+        model "gpt-4o-mini"
         profile agente2
+        statusMessage " ✍🏼 revisando funcion..."
     }
 
     layered example {

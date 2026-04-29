@@ -2,6 +2,7 @@ langchain
 langchain-core
 langchain-openai
 langgraph
+langgraph-cli[inmem]
 langsmith
 pydantic
 python-dotenv

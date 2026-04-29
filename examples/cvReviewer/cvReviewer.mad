@@ -25,7 +25,7 @@
         //summarize maxToken 4
         //trim maxMessages 3
         none
-        persistence None
+        persistence inMemorySave
     }
 
     profile Extractor description 

@@ -80,6 +80,7 @@ Agent:
         ('stateUpdate' stateUpdate+=[Attribute] (',' stateUpdate+=[Attribute])*)?
 
         // Opcional
+        ('statusMessage' statusMessage = STRING)?
         ('temperature' temperature = FLOAT)?
         ('maxToken' maxToken = INT)?
         ('timeOut' timeOut = INT)?

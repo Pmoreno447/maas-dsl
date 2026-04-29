@@ -17,7 +17,7 @@
         attribute decision type string description "Decisión tomada para resolver el pedido"
 
         none
-        persistence None
+        persistence inMemorySave
     }
 
     // PROMPTS

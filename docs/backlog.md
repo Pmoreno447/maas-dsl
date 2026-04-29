@@ -12,8 +12,6 @@
 | 🟡 Media | Segmentación de módulos por subgrafo | Medio | Refactorizar el generador para que los archivos `agents.py`, `prompt.py` y similares se dividan por estructura de comunicación cuando se mezclan varias. No afecta a la corrección del código generado, pero mejora su legibilidad. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md). |
 | 🟢 Baja | Generar código de mecanismo MIX | Alto |Permitir tanto que se guarden los x últimos mensajes como un resumen. Combinación de `trim` y `summarize`. |
 | 🟢 Baja | Flags en el CLI | Desconocido | Añadir opciones `--only` y `--skip` al comando `generate` para permitir activar o desactivar la generación de módulos individuales (state, prompts, agents, graph, tools). |
-|🟢 Baja | Mostrar progreso | Bajo | Permitir que el grafo muestre progreso, por ejemplo, cuando usamos chatgpt antes de responder puede emitir mensajes como "Buscando en internet..." o "Escribiendo resumen" |
-|🟢 Baja | Streaming de respuesta | Bajo | Permitir que los nodos envíen la respuesta según van produciendo los tokens. |
 | 🟢 Baja | Estado independiente por subgrafo | Muy alto | Extender el DSL y el generador para que cada subgrafo (estructura de comunicación) tenga su propio `TypedDict`, con proyección de campos compartidos hacia el estado padre. Solo abordar si aparece un caso de uso real que lo justifique. Ver [`adr/010-estadoPorSubgrafo.md`](./adr/010-estadoPorSubgrafo.md). |
 
 
@@ -27,7 +25,10 @@
 | 🔴 Alta | Mecanismos de bifurcación | Alto | El metamodelo no permite expresar edges condicionales entre nodos. Sin esto no es posible modelar grafos cíclicos ni flujos de control no lineales. Bloquea la implementación de Summarize/Mix, HumanInTheLoop y el nodo resumen. | . |
 | 🔴 Alta | Refinar generación de código de estructura `Layered` | Medio | Revisar y mejorar la generación actual de la estructura de comunicación `Layered` para asegurar corrección, legibilidad y coherencia con el resto de estructuras pendientes. | . |
 | 🔴 Alta | Mezcla de distintos subgrafos (estructuras de comunicación) | Medio | Dar soporte en el generador de código para que los distintos subgrafos sean combinados.| . |
-| 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. |
-| 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith (plataforma usada para debugear el grafo) |
-| 🔴 Alta | Estado persistente | Baja | Evolucionar el DSl y generador de código para que se genere código que permita guardar estados de forma persistente en una base de datos | 
-| 🔴 Alta | Soporte para Langsmith Studio| Baja | Gracias a un json, permite desplegar un servidor local para desarrollo, te da acceso a una API del grafo, un GUI para testear el grafo y gracias a este también podemos generar un docker de nuestro grafo con una API basada en FastAPI| 
+| 🔴 Alta | Generación de código de estructura `Centralized` | Medio |Implementar en el generador la traducción de la estructura de comunicación `Centralized` (un agente coordinador que orquesta al resto) al grafo de LangGraph. | . |
+| 🔴 Alta  | Soporte langgSmith | Bajo | El generador produce lo necesario para dar soporte a langsmith (plataforma usada para debugear el grafo) |. |
+| 🔴 Alta | Estado persistente | Baja | Evolucionar el DSl y generador de código para que se genere código que permita guardar estados de forma persistente en una base de datos | . |
+| 🔴 Alta | Soporte para Langsmith Studio| Baja | Gracias a un json, permite desplegar un servidor local para desarrollo, te da acceso a una API del grafo, un GUI para testear el grafo y gracias a este también podemos generar un docker de nuestro grafo con una API basada en FastAPI| . |
+| 🟡 Media | Generar requirements | Muy Bajo | Generar un requirements.txt en función de las extensiones que necesite el grafo | . |
+|🟢 Baja | Streaming de respuesta | Bajo | Permitir que los nodos envíen la respuesta según van produciendo los tokens. |
+|🟢 Baja | Mostrar progreso | Bajo | Permitir que el grafo muestre progreso, por ejemplo, cuando usamos chatgpt antes de responder puede emitir mensajes como "Buscando en internet..." o "Escribiendo resumen" |
