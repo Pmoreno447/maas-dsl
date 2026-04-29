@@ -1,0 +1,39 @@
+    
+{
+    environment bdTester {
+        none
+        persistence inMemorySave
+    }
+
+    profile agente1 description
+    "
+    Escribe una función en python con lo que te pidan. 
+    "
+
+    profile agente2 description
+    "
+    Analiza el código y detecta si algo está mal, si es el caso corrigelo.
+    "
+
+    agent Agent1 {
+        provider openai
+        model "gpt-4o-mini"
+        profile agente1
+        statusMessage " 🖥️ programando funcion..."
+    }
+
+    agent Agent2 {
+        provider openai
+        model "gpt-4o-mini"
+        profile agente2
+        statusMessage " ✍🏼 revisando funcion..."
+    }
+
+    layered example {
+        start
+        layer first level 1 next second agent Agent1
+        layer second level 2 agent Agent2
+    }
+
+    from example to END
+}

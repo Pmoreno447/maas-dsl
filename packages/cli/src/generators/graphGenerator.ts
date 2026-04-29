@@ -3,8 +3,9 @@ import { isBoolLiteral, isIntLiteral, isStringLiteral } from 'multi-agent-dsl-la
 import { expandToNode, toString } from 'langium/generate';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { extractDestinationAndName, collectApiKeyEnvVars, subgraphDefinitionName } from '../util.js';
+import { extractDestinationAndName, collectApiKeyEnvVars, subgraphDefinitionName} from '../util.js';
 import { generateSubgraphs } from './edges/index.js';
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function generateConditionValue(literal: ConditionLiteral): string {
@@ -141,32 +142,7 @@ ${routers}
 ${edges}
 
 # Compilar
-graph = builder.compile()
-
-def print_state(result: dict):
-    print("💬 MENSAJES:")
-    for i, msg in enumerate(result.get("messages", [])):
-        content = msg.content if hasattr(msg, "content") else str(msg)
-        print(f"  [{i}] {type(msg).__name__}: {content}")
-
-    print("📦 ESTADO:")
-    for key, value in result.items():
-        if key != "messages":
-            print(f"  {key}: {value}")
-
-# Ejecucion (Provisional)
-import asyncio
-
-async def main():
-    entrada = """
-    # Rellenar
-"""
-    result = await graph.ainvoke({
-        "messages": [HumanMessage(content=entrada)]
-    })
-    print_state(result)
-
-asyncio.run(main())`.appendNewLineIfNotEmpty();
+graph = builder.compile()`.appendNewLineIfNotEmpty();
 
     if (!fs.existsSync(data.destination)) {
         fs.mkdirSync(data.destination, { recursive: true });

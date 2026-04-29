@@ -8,12 +8,14 @@ El generador se desarrolla de forma incremental, siguiendo el mismo ciclo iterat
 
 | Módulo | Archivo generado | Estado | Versión metamodelo |
 |---|---|---|---|
-| Prompts | `prompt.py` | ✅ Completo | v4 |
-| Configuración | `.env.template` + `config.py` | ✅ Completo | v4 |
-| Estado | `state.py` | ✅ Completo | v4 |
-| Agentes | `agents.py` | ✅ Completo | v4 |
-| Grafo | `graph.py` | 🟡 Parcial | v4 |
-| Tools | `tools/` | ✅ Completo | v4 |
+| Prompts | `prompt.py` | ✅ Completo | v5 |
+| Configuración | `.env.template` + `config.py` | ✅ Completo | v5 |
+| Estado | `state.py` | ✅ Completo | v5 |
+| Agentes | `agents.py` | ✅ Completo | v5 |
+| Grafo | `graph.py` | 🟡 Parcial | v5 |
+| Tools | `tools/` | ✅ Completo | v5 |
+| Tools | `langgraph.json` | ✅ Completo | v5 |
+| Tools | `checkpointer.py` | ✅ Completo | v5 |
 
 ---
 
@@ -172,9 +174,63 @@ Este modelo cubre todas las construcciones introducidas en la iteración: bifurc
 
 Con esta iteración el generador cubre el módulo `graph.py` de forma completa para las estructuras `Layered` y `Centralized`, incluyendo bifurcaciones y la mezcla de varias estructuras dentro de un mismo sistema. Las próximas iteraciones se centrarán en las estructuras `SharedMessagePool` y `Decentralized`, así como en las mejoras pendientes sobre la calidad del código generado.
 
-**Referencias en el repositorio.**
 
 - Tag: `v0.5.1`
+
+## Iteración 4 — Persistencia, integración con LangSmith Studio, `requirements.txt` y mensajes de progreso por nodo
+
+Cuarta iteración del generador sobre el metamodelo v5. El objetivo es que el sistema multi-agente generado sea **desplegable end-to-end**: que persista su estado entre ejecuciones, se observe desde LangSmith Studio, se construya con `langgraph build` sin pasos manuales y exponga al frontend tanto los tokens del modelo como mensajes de progreso por nodo. El metamodelo expone tres opciones de persistencia (`InMemorySaver`, `PostgreSaver`, `MongoDBSaver`); `none` se deja sin tratamiento específico porque equivale al comportamiento por defecto de `InMemorySaver`.
+
+### Módulos generados
+
+**`checkpointer.py` (nuevo)**
+Módulo dedicado que expone una función `generate_checkpointer()` envuelta como *context manager*. Su contenido depende del subtipo de persistencia: `InMemorySaver` (síncrono, sin conexión externa), `AsyncPostgresSaver` (asíncrono, con `AsyncConnection` de `psycopg` y llamada a `setup()` para crear las tablas) o `MongoDBSaver`. La conexión se parametriza vía `DB_URI`.
+
+**`langgraph.json` (nuevo `jsonGenerator.ts`)**
+Antes generado a mano. En esta iteración se añade `jsonGenerator.ts`, que emite el `langgraph.json` con el campo `checkpointer` apuntando a `./checkpointer.py:generate_checkpointer` y la entrada del grafo. Esto es lo que habilita además la integración con **LangSmith Studio**: arrancar `langgraph dev` con este JSON ya correcto permite inspeccionar trazas y *threads* sin configuración adicional.
+
+**`.env.template` + `config.py`**
+Cuando la persistencia requiere conexión externa se añade el bloque `# Configuración de la base de datos` con la variable `DB_URI`, y se expone como constante en `config.py`. Para `InMemorySaver` no se inyecta nada.
+
+**`requirements.txt` (nuevo)**
+El generador emite directamente el `requirements.txt`, eliminando el paso manual con `pipreqs`. Como el generador conoce exactamente qué imports va a producir, la lista se construye uniendo un núcleo estático (`langgraph`, `langchain`, `langchain-core`, `python-dotenv`, `pydantic`, `typing-extensions`, `langsmith`) con las dependencias condicionales: el paquete por provider de cada agente o coordinator (`langchain-openai`, `langchain-anthropic`, `langchain-google-genai`, `langchain-ollama`), `langchain-mcp-adapters` si hay servidores MCP, y los paquetes de checkpoint y driver según el tipo de persistencia (`langgraph-checkpoint-postgres` + `psycopg[binary]` o `langgraph-checkpoint-mongodb` + `pymongo`). El `summarize` del reducer se trata como caso especial porque arrastra `tiktoken` y `langchain-openai` aunque ningún agente sea de OpenAI.
+
+**`agents.py` — mensajes de progreso por nodo (`statusMessage`)**
+Se añade al metamodelo el atributo opcional `statusMessage` en `Agent`, una cadena estática que el frontend puede mostrar como indicador de la fase actual (estilo "🔎 Buscando en internet…" o "✍️ Resumiendo…" de ChatGPT). Cuando algún agente lo declara, el generador emite el import `from langgraph.config import get_stream_writer` y, al inicio del nodo correspondiente, una llamada `get_stream_writer()({"status": "<mensaje>"})`. El runtime lo expone como evento `custom` en el endpoint `POST /runs/stream`, que el cliente recibe pidiendo `stream_mode=["messages","custom"]`. Si ningún agente lo declara, ni el import ni la llamada se generan.
+
+### Decisiones y limitaciones de esta iteración
+
+- **Checkpointer en archivo aparte, no en `builder.compile()`:** la primera implementación pasaba el checkpointer directamente a `builder.compile(checkpointer=...)`. Esto compila sin error y `setup()` crea las tablas, pero `langgraph dev` (runtime `langgraph_runtime_inmem`) descarta cualquier checkpointer pasado por código y nunca escribe en la base de datos — fallo silencioso, documentado como bug abierto en LangGraph (#5790). La solución adoptada es declararlo en `checkpointer.py` y referenciarlo desde `langgraph.json`, que el runtime sí respeta.
+
+- **`AsyncPostgresSaver` con `AsyncConnection` explícita:** `PostgresSaver.from_conn_string()` devuelve un `_GeneratorContextManager`, no el saver, por lo que llamar a `.setup()` directamente lanza `AttributeError`. El generador instancia el saver con una `AsyncConnection` ya abierta y delega el cierre al `finally`.
+
+- **Validación caja-negra contra el contenedor de DB:** dado que el fallo principal era silencioso, la validación se hizo inspeccionando colecciones/tablas con `mongosh` y `psql`. Comandos en [`docs/comandosCheckpointDB.md`](./comandosCheckpointDB.md).
+
+- **Convención de DB por saver:** `AsyncPostgresSaver` usa la DB de `DB_URI`; `MongoDBSaver` ignora la DB de la URI y crea siempre `checkpointing_db` con colecciones `checkpoints` y `checkpoint_writes`. Esta diferencia indujo inicialmente a pensar que MongoDB no persistía cuando sí lo hacía.
+
+- **Streaming token a token sin cambios en el generador:** la integración con Studio reveló que el streaming token a token ya se cumplía sin tocar el código emitido. Como los nodos llaman a un modelo creado con `init_chat_model(...)`, LangGraph engancha el callback de streaming de LangChain por debajo y la API emite eventos `messages/partial` cuando el cliente pide `stream_mode=["messages"]`. El único requisito adicional es activar `stream_subgraphs: true` cuando los agentes viven dentro de un subgrafo, ya que de lo contrario los chunks no burbujean al SSE.
+
+- **`statusMessage` como cadena estática y no plantilla:** se descartó hacer el atributo interpolable contra el estado para no obligar al generador a parsear placeholders y para mantener la semántica clara — `statusMessage` indica la fase del nodo, no el contenido del mensaje al usuario, que sigue saliendo como `messages/partial`.
+
+### Validación de la iteración
+
+Se introduce el modelo [`examples/bdTester/bdTester.mad`](../examples/bdTester/bdTester.mad), minimalista a propósito (dos agentes en `Layered`), variando el atributo `persistence` entre las tres opciones soportadas y declarando un `statusMessage` por agente. Para cada configuración de persistencia se ejecuta el grafo contra los contenedores Docker de Postgres y Mongo y se comprueba el incremento de checkpoints con consultas directas al contenedor. Los `statusMessage` se validan lanzando runs desde `POST /runs/stream` con `stream_mode=["messages","custom"]` y comprobando la aparición de los eventos `event: custom` con el dict esperado, intercalados con los `messages/partial` del LLM.
+
+Construcciones validadas en esta iteración:
+
+- Generación condicional de `checkpointer.py` y de la variable `DB_URI` según el subtipo de persistencia.
+- Carga del checkpointer desde `langgraph.json` por `langgraph dev`, verificada con conteos directos en Postgres y MongoDB.
+- `requirements.txt` reproducible desde el modelo, sin escaneo de imports.
+- Streaming token a token vía `messages/partial` sobre la API de `langgraph dev`, con `stream_subgraphs: true` cuando aplica.
+- Eventos `custom` por nodo emitidos a través de `get_stream_writer()` cuando el agente declara `statusMessage`.
+
+### Cierre de la iteración
+
+Con esta iteración el código generado pasa a ser desplegable de extremo a extremo: persiste estado, se observa desde LangSmith Studio, se empaqueta con `langgraph build` gracias al `requirements.txt` autogenerado y expone al frontend tanto tokens del modelo como mensajes de progreso por nodo. Las próximas iteraciones se centrarán en las estructuras `SharedMessagePool` y `Decentralized` y en mejoras de calidad del código generado.
+
+**Referencias en el repositorio.**
+
+- Tag: `v0.5.2`
 
 ---
 ## Modelo de ejecución del código generado

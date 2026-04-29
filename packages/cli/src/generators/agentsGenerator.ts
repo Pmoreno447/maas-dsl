@@ -10,6 +10,16 @@ function isUsingTools(model: LLMMultiAgentSystem): boolean {
     return model.tools.length > 0;
 }
 
+function hasAnyStatusMessage(model: LLMMultiAgentSystem): boolean {
+    return model.agents.some(a => !!a.statusMessage);
+}
+
+function streamWriterImport(model: LLMMultiAgentSystem): string {
+    return hasAnyStatusMessage(model)
+        ? 'from langgraph.config import get_stream_writer'
+        : '';
+}
+
 function generateStructuredOutput(agent: Agent): string {
     if (!agent.stateUpdate || agent.stateUpdate.length === 0) return '';
 
@@ -78,6 +88,10 @@ ${agent.stateContext.map(ref => `            ${ref.ref!.name}: {state.get("${ref
     const hasTools = toolNames.length > 0;
     const hasStructured = !!(agent.stateUpdate && agent.stateUpdate.length > 0);
 
+    const statusLine = agent.statusMessage
+        ? `    get_stream_writer()({"status": "${agent.statusMessage}"})\n`
+        : '';
+
     // Rama sin tools: patrón síncrono clásico.
     if (!hasTools) {
         const returnBlock = hasStructured
@@ -88,7 +102,7 @@ ${agent.stateContext.map(ref => `            ${ref.ref!.name}: {state.get("${ref
 
         return `def ${nodeName}(state: State):
     """${description}"""
-    result = ${modelName}.invoke(
+${statusLine}    result = ${modelName}.invoke(
         [SystemMessage(content=${profileName})]
         + state["messages"]
         ${contextFields}
@@ -184,6 +198,7 @@ ${messageImports}
 from prompt import ${profileNames}
 from state import State
 from langchain.chat_models import init_chat_model
+${streamWriterImport(model)}
 ${usesOllama ? 'from config import OLLAMA_BASE_URL' : ''}
 ${hasStructuredOutputs ? 'from pydantic import BaseModel, Field' : ''}
 ${mcpImport}

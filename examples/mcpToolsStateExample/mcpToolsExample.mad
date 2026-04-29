@@ -3,6 +3,7 @@
         attribute enlaces type string description "Campo donde guardar los enlaces consultados para obtener la información"
         attribute resumen type string description "Campo donde guardar la información resumida"
         none
+        persistence inMemorySave
     }
 
     profile Searcher description

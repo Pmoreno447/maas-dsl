@@ -1,6 +1,7 @@
 {
     environment McpTools {
         none
+        persistence inMemorySave
     }
 
     profile Searcher description
