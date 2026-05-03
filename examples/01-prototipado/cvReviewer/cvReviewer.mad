@@ -24,7 +24,13 @@
 
         //summarize maxToken 4
         //trim maxMessages 3
-        none
+        mix {
+            maxToken 4
+            maxMessages 5
+            provider openai
+            model "gpt-5-nano"
+        }
+        
         persistence inMemorySave
     }
 
@@ -123,4 +129,7 @@ El tono del correo debe ser cálido, profesional y motivador. No reveles la punt
         layer EvaluatorLayer level 2 next ReportLayer agent Evaluator
         layer ExtractorLayer level 1 next EvaluatorLayer agent Extractor 
     }
+
+    from START to Grafo
+    from Grafo to END
 }

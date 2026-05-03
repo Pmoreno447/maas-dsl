@@ -3,10 +3,13 @@ from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from prompt import EXTRACTOR, EVALUATOR, REPORTGENERATOR, NOTIFIER
 from state import State
 from langchain.chat_models import init_chat_model
-from pydantic import BaseModel, Field
-# Importar herramientas (pendiente siguiente iteración)
 
-# Salidas de los nodos 
+
+from pydantic import BaseModel, Field
+
+from tools.Example import notifyByEmail
+
+# Salidas de los nodos
 class ExtractorOutput(BaseModel):
     candidateName: str = Field(description="Nombre del candidato")
     candidateEmail: str = Field(description="Email del candidato")
@@ -29,7 +32,9 @@ class ReportGeneratorOutput(BaseModel):
 modelExtractor = init_chat_model(model="openai:gpt-5-nano", temperature=0).with_structured_output(ExtractorOutput)
 modelEvaluator = init_chat_model(model="openai:gpt-5-nano", temperature=0).with_structured_output(EvaluatorOutput)
 modelReportGenerator = init_chat_model(model="openai:gpt-5-nano", temperature=0).with_structured_output(ReportGeneratorOutput)
-modelNotifier = init_chat_model(model="openai:gpt-5-nano", temperature=0)
+modelNotifier = init_chat_model(model="openai:gpt-5-nano", temperature=0).bind_tools([notifyByEmail])
+
+_tools_by_name = {t.name: t for t in [notifyByEmail]}
 
 # Nodos del grafo
 def nodeExtractor(state: State):
@@ -54,12 +59,12 @@ def nodeEvaluator(state: State):
         [SystemMessage(content=EVALUATOR)]
         + state["messages"]
         + [HumanMessage(content=f"""
-            candidateName: {state["candidateName"]}
-            candidateEmail: {state["candidateEmail"]}
-            yearsExperience: {state["yearsExperience"]}
-            skills: {state["skills"]}
-            educationLevel: {state["educationLevel"]}
-            language: {state["language"]}
+            candidateName: {state.get("candidateName", "No registrado aún")}
+            candidateEmail: {state.get("candidateEmail", "No registrado aún")}
+            yearsExperience: {state.get("yearsExperience", "No registrado aún")}
+            skills: {state.get("skills", "No registrado aún")}
+            educationLevel: {state.get("educationLevel", "No registrado aún")}
+            language: {state.get("language", "No registrado aún")}
         """)]
     )
     return {
@@ -75,16 +80,16 @@ def nodeReportGenerator(state: State):
         [SystemMessage(content=REPORTGENERATOR)]
         + state["messages"]
         + [HumanMessage(content=f"""
-            candidateName: {state["candidateName"]}
-            candidateEmail: {state["candidateEmail"]}
-            yearsExperience: {state["yearsExperience"]}
-            skills: {state["skills"]}
-            educationLevel: {state["educationLevel"]}
-            language: {state["language"]}
-            score: {state["score"]}
-            meetRequirement: {state["meetRequirement"]}
-            strengths: {state["strengths"]}
-            weaknesses: {state["weaknesses"]}
+            candidateName: {state.get("candidateName", "No registrado aún")}
+            candidateEmail: {state.get("candidateEmail", "No registrado aún")}
+            yearsExperience: {state.get("yearsExperience", "No registrado aún")}
+            skills: {state.get("skills", "No registrado aún")}
+            educationLevel: {state.get("educationLevel", "No registrado aún")}
+            language: {state.get("language", "No registrado aún")}
+            score: {state.get("score", "No registrado aún")}
+            meetRequirement: {state.get("meetRequirement", "No registrado aún")}
+            strengths: {state.get("strengths", "No registrado aún")}
+            weaknesses: {state.get("weaknesses", "No registrado aún")}
         """)]
     )
     return {
@@ -92,17 +97,28 @@ def nodeReportGenerator(state: State):
         "recommendation": result.recommendation
     }
 
-def nodeNotifier(state: State):
+async def nodeNotifier(state: State):
     """"""
-    result = modelNotifier.invoke(
+    messages = (
         [SystemMessage(content=NOTIFIER)]
         + state["messages"]
         + [HumanMessage(content=f"""
-            candidateName: {state["candidateName"]}
-            candidateEmail: {state["candidateEmail"]}
-            score: {state["score"]}
-            reportText: {state["reportText"]}
-            recommendation: {state["recommendation"]}
+            candidateName: {state.get("candidateName", "No registrado aún")}
+            candidateEmail: {state.get("candidateEmail", "No registrado aún")}
+            score: {state.get("score", "No registrado aún")}
+            reportText: {state.get("reportText", "No registrado aún")}
+            recommendation: {state.get("recommendation", "No registrado aún")}
         """)]
     )
-    return {"messages": [result]}
+    while True:
+        response = await modelNotifier.ainvoke(messages)
+        messages.append(response)
+        if not response.tool_calls:
+            return {"messages": [response]}
+        for tc in response.tool_calls:
+            tool = _tools_by_name[tc["name"]]
+            try:
+                result = await tool.ainvoke(tc["args"])
+                messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
+            except Exception as e:
+                messages.append(ToolMessage(content=f"Error al llamar herramienta '{tc['name']}': {e}", tool_call_id=tc["id"]))

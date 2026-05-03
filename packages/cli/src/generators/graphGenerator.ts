@@ -5,6 +5,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { extractDestinationAndName, collectApiKeyEnvVars, subgraphDefinitionName} from '../util.js';
 import { generateSubgraphs } from './edges/index.js';
+import { resolveTerminalNode, type TerminalNodeInjection } from '../templates/reducers.js';
 
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -24,10 +25,11 @@ function generateOperator(op: string): string {
     }
 }
 
-function generateRouters(model: LLMMultiAgentSystem): { routers: string, edges: string } {
+function generateRouters(model: LLMMultiAgentSystem, terminal: TerminalNodeInjection | null): { routers: string, edges: string } {
     const bySource = new Map<string, CommTransition[]>();
     for (const t of model.transitions) {
-        const name = t.source.ref!.name;
+        if (t.isStart) continue;
+        const name = t.source!.ref!.name;
         if (!bySource.has(name)) bySource.set(name, []);
         bySource.get(name)!.push(t);
     }
@@ -35,23 +37,32 @@ function generateRouters(model: LLMMultiAgentSystem): { routers: string, edges: 
     const routerFns: string[] = [];
     const edgeCalls: string[] = [];
 
+    const endReturn = terminal ? `${terminal.routerFn}(state)` : 'END';
+
     for (const [sourceName, transitions] of bySource) {
         const srcNode = `"${sourceName.toLowerCase()}"`;
         const hasConditions = transitions.some(t => t.condition);
 
         if (!hasConditions) {
             const t = transitions[0];
-            const target = t.isEnd ? 'END' : `"${t.target!.ref!.name.toLowerCase()}"`;
-            edgeCalls.push(`builder.add_edge(${srcNode}, ${target})`);
+            if (t.isEnd && terminal) {
+                edgeCalls.push(`builder.add_conditional_edges(\n    ${srcNode},\n    ${terminal.routerFn},\n    {\n        "${terminal.nodeName}": "${terminal.nodeName}",\n        END: END\n    }\n)`);
+            } else {
+                const target = t.isEnd ? 'END' : `"${t.target!.ref!.name.toLowerCase()}"`;
+                edgeCalls.push(`builder.add_edge(${srcNode}, ${target})`);
+            }
             continue;
         }
 
         const fnName = `route_${sourceName.toLowerCase()}`;
         const lines: string[] = [`def ${fnName}(state: State) -> str:`];
-        let defaultTarget = 'END';
+        const defaultsToEnd = !transitions.some(t => !t.condition);
+        let defaultTarget = endReturn;
+        let usesEnd = defaultsToEnd;
 
         for (const t of transitions) {
-            const target = t.isEnd ? 'END' : `"${t.target!.ref!.name.toLowerCase()}"`;
+            const target = t.isEnd ? endReturn : `"${t.target!.ref!.name.toLowerCase()}"`;
+            if (t.isEnd) usesEnd = true;
             if (t.condition) {
                 const attr = t.condition.attribute.ref!.name;
                 const op = generateOperator(t.condition.operator);
@@ -66,12 +77,20 @@ function generateRouters(model: LLMMultiAgentSystem): { routers: string, edges: 
         routerFns.push(lines.join('\n'));
 
         const seen = new Set<string>();
-        const mappingEntries = transitions
-            .map(t => t.isEnd ? `        END: END` : `        "${t.target!.ref!.name.toLowerCase()}": "${t.target!.ref!.name.toLowerCase()}"`)
-            .filter(v => !seen.has(v) && seen.add(v))
-            .join(',\n');
+        const mappingEntries: string[] = [];
+        for (const t of transitions) {
+            const entry = t.isEnd ? `        END: END` : `        "${t.target!.ref!.name.toLowerCase()}": "${t.target!.ref!.name.toLowerCase()}"`;
+            if (!seen.has(entry)) { seen.add(entry); mappingEntries.push(entry); }
+        }
+        if (defaultsToEnd) {
+            const endEntry = `        END: END`;
+            if (!seen.has(endEntry)) { seen.add(endEntry); mappingEntries.push(endEntry); }
+        }
+        if (terminal && usesEnd) {
+            mappingEntries.push(`        "${terminal.nodeName}": "${terminal.nodeName}"`);
+        }
 
-        edgeCalls.push(`builder.add_conditional_edges(\n    ${srcNode},\n    ${fnName},\n    {\n${mappingEntries}\n    }\n)`);
+        edgeCalls.push(`builder.add_conditional_edges(\n    ${srcNode},\n    ${fnName},\n    {\n${mappingEntries.join(',\n')}\n    }\n)`);
     }
 
     return {
@@ -102,16 +121,25 @@ export function generateGraph(model: LLMMultiAgentSystem, filePath: string, dest
         .map(s => `builder.add_node("${s.name.toLowerCase()}", ${s.name})`)
         .join('\n');
 
-    const startEdges = structures
-        .filter(s => s.isStart)
-        .map(s => `builder.add_edge(START, "${s.name.toLowerCase()}")`)
+    const startEdges = model.transitions
+        .filter(t => t.isStart && t.target?.ref)
+        .map(t => `builder.add_edge(START, "${t.target!.ref!.name.toLowerCase()}")`)
         .join('\n');
 
-    const { routers, edges } = generateRouters(model);
+    const terminal = resolveTerminalNode(model.envirement.messages);
+    const { routers, edges } = generateRouters(model, terminal);
 
     const apiKeys = collectApiKeyEnvVars(model.agents).filter(k => k !== 'OLLAMA_BASE_URL');
     const apiKeyImports = apiKeys.length > 0 ? `from config import ${apiKeys.join(', ')}` : '';
     const apiKeyEnvAssignments = apiKeys.map(k => `os.environ["${k}"] = ${k}`).join('\n');
+
+    const stateImport = terminal
+        ? `from state import State, ${terminal.stateImports.join(', ')}`
+        : 'from state import State';
+
+    const terminalNodeRegistration = terminal
+        ? `builder.add_node("${terminal.nodeName}", ${terminal.nodeName})\nbuilder.add_edge("${terminal.nodeName}", END)`
+        : '';
 
     const fileNode = expandToNode`
 import os
@@ -119,7 +147,7 @@ ${apiKeyImports}
 ${apiKeyEnvAssignments}
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, START, END
-from state import State
+${stateImport}
 ${subgraphImports}
 
 
@@ -131,6 +159,8 @@ builder = StateGraph(State)
 ${initNodes}
 
 ${addNodes}
+
+${terminalNodeRegistration}
 
 # Edges de inicio
 ${startEdges}

@@ -244,7 +244,6 @@ REGLAS ESTRICTAS:
     }  
 
     layered ValidationGraph {
-        start
         layer ValidatorLayer level 1 agent Validator
     }
 
@@ -265,6 +264,7 @@ REGLAS ESTRICTAS:
         agents shippingHelper, paymentHelper, productHelper, generalHelper
     }
 
+    from START to ValidationGraph
     from ValidationGraph to answerWriter when isValid equal False
     from ValidationGraph to ExtractorGraph when isValid equal True
     from ExtractorGraph to specializedAssistants

@@ -1,3 +1,9 @@
+## Estado
+
+**Deprecado.** Sustituido por el ADR 011.
+
+La decisión original de insertar el nodo al inicio del grafo se basaba en una asunción implícita de ejecuciones independientes que dejó de ser válida tras la incorporación del soporte para persistencia mediante checkpointer.
+
 # Pendiente — Implementación de Summarize y Mix en el generador
 
 ## Descripción del problema

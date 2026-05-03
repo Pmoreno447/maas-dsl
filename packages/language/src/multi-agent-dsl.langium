@@ -38,27 +38,39 @@ Environment:
 GameRule:
     'gamerule' id = ID 'description' description = STRING;
 
-fragment Literal:
-    'literal' '{'
-        ('value' value+=STRING)+
-    '}';
+// TODO: soporte para literales en atributos. Pendiente de implementar en el generador
+// (stateGenerator.ts y agentsGenerator.ts ignoran actualmente este campo).
+// fragment Literal:
+//     'literal' '{'
+//         ('value' value+=STRING)+
+//     '}';
 
 Attribute:
-    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING (Literal)?;
+    'attribute' name = ID 'type' type = AttributeType 'description' description = STRING /* (Literal)? */;
 
 type Message = Trim | Mix | None | Summarize;
 
 Trim:
-    'trim' 'maxMessages' maxMessages = INT;
+    'trim' '{' 
+        'maxMessages' maxMessages = INT
+    '}';
 
 Mix:
-    'mix' 'maxToken' maxToken = INT 'maxMessages' maxMessages = INT;
+    'mix' '{'
+        'maxToken' maxToken = INT 
+        'maxMessages' maxMessages = INT
+        ProviderModel
+    '}';
+
+Summarize:
+    'summarize' '{' 
+        'maxToken' maxToken = INT
+        ProviderModel
+    '}';
 
 None:
     {infer None} 'none';
 
-Summarize:
-    'summarize' 'maxToken' maxToken = INT;
 
 // A partir de ahora, se define todo lo relacionado con los agentes individuales:
 // El proveedor es estático (impacta a la generación: API keys, imports). El
@@ -67,11 +79,14 @@ Summarize:
 ProviderType returns string:
     'openai' | 'anthropic' | 'ollama' | 'google';
 
+fragment ProviderModel:
+    'provider' provider=ProviderType
+    'model' model=STRING;
+
 Agent:
     'agent' name=ID '{'
         //Necesario
-        'provider' provider=ProviderType
-        'model' model=STRING
+        ProviderModel
         'profile' profile=[Profile]
 
         //Recomendable
@@ -113,14 +128,13 @@ MCPServer:
 // Se ha omitido CommunicationModel porque se ha descartado CommunicationParadigm
 type CommunicationStructure = Layered | SharedMessagePool | Centralized | Decentralized;
 
-fragment CommStructureBase:
-    (isStart?='start')?;
-
 fragment Agents:
     'agents' agents+=[Agent] (',' agents+=[Agent])*;
 
 CommTransition:
-    'from' source=[CommunicationStructure] 'to' (target=[CommunicationStructure] | isEnd?='END') ('when' condition=Condition)?;
+    'from' (isStart?='START' | source=[CommunicationStructure])
+    'to' (isEnd?='END' | target=[CommunicationStructure])
+    ('when' condition=Condition)?;
 
 ConditionType returns string:
     'equal' | 'greather' | 'lower';
@@ -137,15 +151,13 @@ StringLiteral: {infer StringLiteral} value=STRING;
 
 Layered:
     'layered' name=ID '{'
-        CommStructureBase
         layers+=Layer+
     '}';
 
 Coordinator:
     'coordinator' name=ID '{'
         //Necesario
-        'provider' provider=ProviderType
-        'model' model=STRING
+        ProviderModel
         'profile' profile=[Profile]
 
         // Opcional
@@ -154,20 +166,17 @@ Coordinator:
 
 Centralized:
     'centralized' name=ID '{'
-        CommStructureBase
         coordinator=Coordinator
         Agents
     '}';
 
 SharedMessagePool:
     'shared_message_pool' name=ID '{'
-        CommStructureBase
         Agents
     '}';
 
 Decentralized:
     'decentralized' name=ID '{'
-        CommStructureBase
         Agents
     '}';
 

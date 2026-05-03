@@ -89,7 +89,6 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
     }
 
     centralized ContentHub {
-        start
         coordinator Coord {
             provider openai
             model "gpt-4o"
@@ -104,6 +103,7 @@ lista para ser entregada, añadiendo metadatos y firma de revisión.
         layer FormatterLayer level 1 next ValidatorLayer agent Formatter
     }
 
+    from START to ContentHub
     from ContentHub to PublishPipeline
     from ContentHub to END
 

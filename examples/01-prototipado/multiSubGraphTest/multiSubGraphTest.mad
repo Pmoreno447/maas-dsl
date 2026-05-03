@@ -56,7 +56,6 @@ sintetiza una respuesta clara y concisa.
     }
 
     layered Pipeline1 {
-        start
         layer ResponderLayer level 3 agent Responder
         layer FormatterLayer level 2 next ResponderLayer agent Formatter
         layer SearcherLayer level 1 next FormatterLayer agent Searcher
@@ -80,6 +79,8 @@ sintetiza una respuesta clara y concisa.
         layer SearcherLayer level 1 next FormatterLayer agent Searcher
     }
 
+    from START to Pipeline1
+    
     from Pipeline1 to Pipeline2 when bool equal True
     from Pipeline1 to Pipeline3 when bool equal False
     from Pipeline1 to END

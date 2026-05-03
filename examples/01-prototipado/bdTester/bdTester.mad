@@ -30,10 +30,10 @@
     }
 
     layered example {
-        start
         layer first level 1 next second agent Agent1
         layer second level 2 agent Agent2
     }
 
+    from START to example
     from example to END
 }
